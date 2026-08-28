@@ -1,0 +1,8 @@
+.glass-panel {
+  border: 1px solid var(--rim);
+  border-radius: var(--radius-sheet);
+  background: var(--glass);
+  box-shadow: var(--shadow-soft), inset 0 1px rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(26px) saturate(132%);
+  -webkit-backdrop-filter: blur(26px) saturate(132%);
+}

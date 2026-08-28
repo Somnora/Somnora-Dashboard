@@ -1,0 +1,27 @@
+:root {
+  color-scheme: dark;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  --ink-light: rgba(255, 255, 255, 0.96);
+  --ink-secondary: rgba(255, 255, 255, 0.78);
+  --ink-dark: #1c2230;
+  --coral: #e0927a;
+  --coral-soft: #efb39f;
+  --coral-deep: #bd6f5c;
+  --gold: #d6b36c;
+  --glass: rgba(20, 30, 43, 0.46);
+  --glass-soft: rgba(245, 248, 250, 0.12);
+  --glass-strong: rgba(13, 21, 32, 0.72);
+  --rim: rgba(255, 255, 255, 0.22);
+  --scrim: rgba(0, 0, 0, 0.34);
+  --focus: #ffd1c4;
+  --danger: #f2a8a2;
+  --success: #add3bb;
+  --radius-card: 16px;
+  --radius-sheet: 24px;
+  --shadow-soft: 0 20px 70px rgba(0, 0, 0, 0.22);
+  --spring: 340ms cubic-bezier(0.22, 1, 0.36, 1);
+}

@@ -1,0 +1,117 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: #101822;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  color: var(--ink-light);
+  background-color: #101822;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+}
+
+.bootstrap-shell {
+  position: relative;
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 32px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.bootstrap-shell::before {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  content: "";
+  background-image: url('/assets/backgrounds/eureka.jpg');
+  background-position: center;
+  background-size: cover;
+}
+
+.bootstrap-shell::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  background: var(--scrim);
+}
+
+.bootstrap-card {
+  width: min(620px, 100%);
+  padding: clamp(28px, 5vw, 58px);
+}
+
+.bootstrap-card h1 {
+  margin-bottom: 16px;
+  font-size: clamp(44px, 7vw, 78px);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+}
+
+.bootstrap-card p:not(.eyebrow) {
+  max-width: 48ch;
+  color: var(--ink-secondary);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.eyebrow {
+  margin-bottom: 14px;
+  color: var(--coral-soft);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.demo-pill {
+  display: inline-flex;
+  padding: 9px 13px;
+  border: 1px solid var(--rim);
+  border-radius: 999px;
+  color: var(--ink-secondary);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+}

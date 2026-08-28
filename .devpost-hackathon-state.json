@@ -1,0 +1,46 @@
+{
+  "plugin": "devpost-hackathon",
+  "version": 2,
+  "hackathon": {
+    "slug": "allthingsagentichackathon",
+    "name": "All Things Agentic Hackathon",
+    "url": "https://allthingsagentichackathon.devpost.com",
+    "selected": true,
+    "source": "known"
+  },
+  "participant": {
+    "name": "",
+    "display_name": "James McShane"
+  },
+  "project": {
+    "name": "Somnora Desktop Workbench",
+    "summary": "An agentic web dashboard that connects Somnora iOS and Apple Watch context to proactive, consent-controlled creative and well-being workflows, with future adapters for Somnora Fitness and Somnora Nutrition.",
+    "ai_usage": "",
+    "codex_usage": ""
+  },
+  "current_stage": "resources",
+  "completed_stages": [
+    "start-hackathon",
+    "review",
+    "resources"
+  ],
+  "rules_acknowledged": true,
+  "learning": {
+    "status": "active",
+    "current_step": "build",
+    "completed_steps": [
+      "onboard",
+      "scope",
+      "prd",
+      "spec",
+      "checklist"
+    ],
+    "plan_file": "docs/hackathon-build/scope.md",
+    "checklist_file": "docs/hackathon-build/checklist.md"
+  },
+  "submission": {
+    "draft_file": "devpost-submission.md",
+    "status": "not-started"
+  },
+  "next_command": "build-project"
+}
