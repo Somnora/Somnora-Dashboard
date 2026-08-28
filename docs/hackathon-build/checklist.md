@@ -28,49 +28,49 @@
   Acceptance: The app renders a minimal accessible root; no real user data or secrets are present; reused assets are disclosed; the project can be installed and built from the lockfile.
   Verify: Run `npm ci`, `npm run typecheck`, `npm test -- --run`, `npm run build`, `git diff --check`, and inspect the first rendered browser frame.
 
-- [ ] **2. Define domain contracts, seeded profile, and pure state**
+- [x] **2. Define domain contracts, seeded profile, and pure state**
   Spec ref: `spec.md > Workbench State Layer`, `spec.md > Demo Data Adapter`, `spec.md > Data Flow > Startup Flow`
   What to build: Add typed profile, conversation, memory, theme, chart, invitation, pairing, and delivery models. Create the privacy-safe 30-day demo profile and reducer state. Implement the deterministic dry-spell policy, invitation adjustment rules, delivery transition guard, memory correction overlay, and safe persistence boundaries.
   Acceptance: The seeded profile supports all planned views; the dry spell deterministically produces Three Beautiful Things; invalid delivery transitions are rejected; burn text and private reflections have no persistent-storage path.
   Verify: Run focused Vitest suites for invitation policy, delivery state, persistence, memory overlay, and fixture validity, then run `npm run typecheck`.
 
-- [ ] **3. Build the Somnora desktop shell and visual token system**
+- [x] **3. Build the Somnora desktop shell and visual token system**
   Spec ref: `spec.md > Web Presentation Layer`, `spec.md > Components And Responsibilities > AppShell`
   What to build: Translate the canonical iOS design rules into web CSS tokens, image backgrounds, scrims, glass surfaces, rim lighting, serif Nora voice, sans-serif chrome, coral primary actions, focus rings, and reduced-motion behavior. Build the navigation rail, transparent header, demo badge, device status, responsive content frame, and accessible modal foundation.
   Acceptance: Home, Conversations, About Me, Themes, and Analytics are reachable; the interface uses image backgrounds rather than the deprecated gradient; primary text remains legible; navigation and close controls work by keyboard; the shell fits 1440 by 900 and 1280 by 800 without clipping.
   Verify: Run component tests, Playwright keyboard smoke coverage, reduced-motion smoke coverage, and inspect screenshots at both target sizes.
 
-- [ ] **4. Implement Living Nora Home and invitation controls**
+- [x] **4. Implement Living Nora Home and invitation controls**
   Spec ref: `spec.md > Nora Invitations Engine`, `spec.md > Components And Responsibilities > InvitationCard And InvitationWorkspace`
   What to build: Render the four-day Eureka dry-spell observation, Three Beautiful Things card, Why this, Accept, Adjust, Not now, and Less like this behavior. Add separate Autonomy and Stretch Level controls with safe explanatory copy. Implement indoor, shorter, lower-energy, no-social, and alternate-activity adjustments.
   Acceptance: One recommendation dominates the first screen without scrolling; every invitation shows reason, time, energy, family, privacy, and alternatives; acceptance is explicit; adjustment produces a revised invitation that still requires acceptance; decline is neutral and non-punitive.
   Verify: Run Home and invitation component tests, keyboard through every action, inspect the first ten-second frame, and confirm no action dispatch occurs before acceptance.
 
-- [ ] **5. Implement the focused About Me graph and memory control**
+- [x] **5. Implement the focused About Me graph and memory control**
   Spec ref: `spec.md > About Me Graph`, `spec.md > Data Flow > Why This Flow`, `spec.md > Data Flow > Memory Correction Flow`
   What to build: Render the authored React Flow graph with category-specific nodes and accessible labels. Add the evidence inspector, source type, date, representative evidence, focused Why this path, That's right, Not quite, and Forget this. Apply corrections as a session overlay and recompute the active explanation after forgetting evidence.
   Acceptance: The graph remains legible and bounded; user facts, Nora observations, and tentative interpretations are distinct; Why this highlights only relevant evidence; corrections visibly update the graph; forgotten evidence no longer supports the active invitation; reduced motion removes ambient drift.
   Verify: Run graph and memory-overlay tests, Playwright Why this and correction paths, keyboard inspection, and visual QA of full and reduced-motion states.
 
-- [ ] **6. Build the seeded ecosystem views**
+- [x] **6. Build the seeded ecosystem views**
   Spec ref: `spec.md > Charts And Themes`, `spec.md > Web Presentation Layer`
   What to build: Add Dream, Daily, and Eureka conversation switching, representative history, the Themes workspace for people, emotions, subjects, concerns, and imagery, and the Analytics workspace for seeded sleep and biometric charts. Include a visible growth comparison grounded in source entries without a mental-health score.
   Acceptance: Mode switching preserves in-session position; Eureka supports the hero context; Dream and Daily are clearly seeded; chart units and dates are readable; dream imagery is tentative and personal; no view makes a diagnosis or universal symbol claim.
   Verify: Run view-level tests, navigate every destination by keyboard, inspect chart labels and demo disclosure, and capture rendered screenshots for Conversations, Themes, and Analytics.
 
-- [ ] **7. Complete the deterministic Three Beautiful Things loop**
+- [x] **7. Complete the deterministic Three Beautiful Things loop**
   Spec ref: `spec.md > Transport Adapter`, `spec.md > Data Flow > Invitation Dispatch Flow`, `spec.md > Data Flow > Mission Progress Flow`
   What to build: Implement `WorkbenchTransport`, deterministic `DemoTransport`, visible Pending, Delivered to iPhone, Delivered to Watch, Acknowledged, progress, completion, failure, retry, cancel, and expiry states. Build the mission workspace and privacy-safe Field Note with three bundled images and an optional Eureka reflection.
   Acceptance: The entire hero loop runs without network access; no state implies delivery before confirmation; progress reaches three once; duplicate completion does not create duplicate Field Notes; reflection is optional; simulated status is labeled as demo; refresh restores only safe demo progress.
   Verify: Run reducer and transport tests, run the Playwright hero flow from Home through Field Note, test failure and retry, refresh mid-flow, and inspect the completed Field Note frame.
 
-- [ ] **8. Build reflective activities and accessibility variants**
+- [x] **8. Build reflective activities and accessibility variants**
   Spec ref: `spec.md > Reflective Burn Exercise`, `spec.md > Security And Privacy Controls > Payload minimization`
   What to build: Add the private burn exercise with write, review, optional separate save, confirmation, full animation, reduced-motion dissolve, completion, and close cleanup. Represent the pre-existing breathing experience as a Reset invitation without claiming it as new. Add preview-only activity concepts for the other invitation families without false start controls.
   Acceptance: Burn text is not persisted, logged, added to memory, or present after completion; reduced motion contains no flame or particle movement; closing clears unsaved content; breathing is labeled as ecosystem continuity; unavailable activity concepts cannot be started.
   Verify: Run burn privacy and state tests, inspect browser storage before and after, run reduced-motion Playwright coverage, and visually inspect the full and accessible completion frames.
 
-- [ ] **9. Lock the recordable web MVP**
+- [x] **9. Lock the recordable web MVP**
   Spec ref: `spec.md > Verification Matrix > Web end to end`, `spec.md > Demo And Submission Flow > Reliable recorded path`
   What to build: Complete responsive polish, calm empty and error states, focus management, contrast, motion tuning, copy review, screenshot fixtures, and a one-command local demo start. Add a README that distinguishes deterministic demo behavior from unimplemented live sync. Commit the verified dashboard MVP as a revert point.
   Acceptance: Every primary view is recordable; the complete demo works in a fresh browser session; no emoji or prohibited gradient appears; reduced-motion and keyboard paths remain complete; seeded and simulated behavior is disclosed; production build has no secret values.

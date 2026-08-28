@@ -4,14 +4,16 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "demo": "vite --host 127.0.0.1 --port 4173",
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint .",
+    "screenshots": "playwright test --grep @visual --workers=1",
     "test": "vitest",
     "test:run": "vitest run",
-    "e2e": "playwright test"
+    "e2e": "playwright test --grep-invert @visual"
   },
   "dependencies": {
     "@xyflow/react": "12.11.5",

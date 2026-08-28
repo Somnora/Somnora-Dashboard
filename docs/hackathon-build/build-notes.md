@@ -172,3 +172,75 @@
 - Added the web design mapping, CSS token baseline, unit, lint, type-check, production-build, and Playwright entry points.
 - Verified `npm run typecheck`, `npm run test:run`, `npm run lint`, `npm run build`, and the Chromium bootstrap smoke test.
 - Inspected a fresh 1440 by 900 rendered frame. The image background, scrim, glass rim, serif heading, demo disclosure, and focus baseline render correctly.
+
+## 2026-08-28 - Build items 2 through 4
+
+### Deterministic product core
+
+- Added a privacy-safe 30-day profile covering Dream, Daily, Eureka, themes, biometrics, memory evidence, and the local Field Note assets.
+- The seeded profile has a deterministic four-day Eureka gap and grounded prior evidence linking walks and scene changes to returning curiosity.
+- Added pure invitation, adjustment, delivery-transition, memory-overlay, reducer, and bounded-persistence contracts.
+- Verified that impossible device states, decreasing progress, and forgotten memory evidence are rejected or removed as designed.
+
+### Desktop shell and Living Nora Home
+
+- Built the full navigation rail, transparent destination header, seeded-demo disclosure, device-status shell, image backgrounds, glass surfaces, focus system, and reduced-motion baseline.
+- Built the first-screen Three Beautiful Things invitation with reason, duration, energy, privacy boundary, Why this, Accept, Adjust, Not now, and Less like this behavior.
+- Added independent Autonomy and Stretch Level controls. Quiet autonomy holds proactive invitations; adjustment creates a revised invitation that still waits for acceptance.
+- Acceptance records consent only. Device delivery remains idle until the transport milestone.
+- Verified 16 unit and component tests plus five browser checks. Inspected 1440 by 900 and 1280 by 800 frames with no horizontal clipping or hero-card overflow.
+
+## 2026-08-28 - Build items 5 and 6
+
+### About Me graph
+
+- Built an authored React Flow graph with 18 memory nodes and 18 visible connections.
+- Distinguished user-confirmed facts, Nora observations, tentative interpretations, and growth markers through text and color.
+- Why this focuses the invitation path while unrelated memories remain spatially visible but recede.
+- Added an evidence inspector with source type, date, excerpt, confidence context, That's right, Not quite, and a confirmed Forget this flow.
+- Corrections remain session overlays. Forgetting the movement memory removes the node, its edges, and two supporting evidence records from the active invitation explanation.
+- Browser QA caught and fixed a React Flow pointer-layer issue. Pointer and keyboard node inspection now both pass.
+
+### Seeded ecosystem views
+
+- Built Dream, Daily, and Eureka conversation switching with retained in-session mode and scroll positions.
+- Built a Themes workspace for people, emotions, subjects, concerns, imagery, and a grounded growth comparison without a mental-health score.
+- Dream imagery explicitly remains personal and tentative rather than a universal symbol claim.
+- Built seeded sleep and HRV charts with dates and units, plus sleep, restful percentage, resting heart rate, and HRV summaries.
+- Disabled chart path animation for stable recording and immediate reduced-motion-safe rendering.
+- Verified 21 unit and component tests plus ten browser paths. Inspected Conversations, Themes, Analytics, and the focused About Me graph at 1440 by 900.
+
+## 2026-08-28 - Build item 7
+
+### Deterministic hero loop
+
+- Added the `WorkbenchTransport` contract and an offline `DemoTransport` with guarded, monotonic delivery states.
+- The accepted invitation remains idle until a second explicit send action starts the labeled simulation.
+- Implemented pending, iPhone delivery, Watch delivery, acknowledgement, in-progress, completion, failure, retry, cancellation, and expiry behavior.
+- Added safe session recovery containing action status and progress only. It does not contain photo bytes, reflections, memory evidence, or exercise text.
+- Built the three-photo mission and one privacy-safe Field Note from bundled demo images. Duplicate completion remains idempotent and creates one Field Note.
+- Verified transport and reducer behavior plus four browser hero paths, including refresh recovery and failure handling.
+
+## 2026-08-28 - Build item 8
+
+### Reflective activities
+
+- Built the private burn exercise with write, review, explicit burn confirmation, immediate text clearing, full visual burn, reduced-motion dissolve, optional separate reflection, and close cleanup.
+- Confirmed burn and reflection text have no logging or browser-storage path and are cleared when the exercise closes.
+- Labeled the breathing reset as pre-existing Somnora continuity rather than new hackathon work.
+- Added preview-only cards for Tiny Detour, Sound Map, One Honest Question, Unsent Postcard, and Color Hunt without false start controls.
+- Verified burn privacy and state behavior in unit tests and three browser paths, including the reduced-motion alternative.
+
+## 2026-08-28 - Build item 9
+
+### Recordable dashboard MVP
+
+- Added destination-level code splitting so Home loads without the React Flow and chart bundles. The production build now has no oversized initial chunk warning.
+- Corrected modal context labels, added unique accessible names, contained keyboard focus, restored prior focus on close, and preserved Escape behavior.
+- Reset both root and workspace scroll positions on destination and mission-stage changes. Visual QA caught and fixed a clipped Field Note recording state.
+- Restored React Flow's default visible attribution and added a browser-console gate across every primary destination.
+- Added `npm run demo` for one-command local startup, `npm run screenshots` for deterministic visual fixtures, and a README with exact new-versus-existing and simulated-versus-live boundaries.
+- Reinstalled 402 packages from the lockfile with zero reported vulnerabilities.
+- Verified 26 unit and component tests, 20 functional browser tests, one visual fixture path, type checking, lint, production build, and `git diff --check`.
+- Inspected Home at 1440 by 900 and 1280 by 800, focused About Me, Conversations, Themes, Analytics, consent, acknowledged delivery, the complete Field Note with three loaded images, burn review, burn motion, burn completion, and the activity library.
+- Scanned shipped source for prohibited Somnora background tokens, emoji, en and em dashes, and common secret signatures. No prohibited source token or credential was found.

@@ -6,3 +6,68 @@
   backdrop-filter: blur(26px) saturate(132%);
   -webkit-backdrop-filter: blur(26px) saturate(132%);
 }
+
+.primary-button,
+.secondary-button,
+.text-button,
+.icon-button {
+  border: 0;
+  border-radius: 12px;
+  color: inherit;
+  cursor: pointer;
+  transition: transform var(--spring), background var(--spring), border-color var(--spring);
+}
+
+.primary-button,
+.secondary-button {
+  min-height: 42px;
+  padding: 10px 15px;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.primary-button {
+  color: #241815;
+  background: linear-gradient(180deg, #f1b29d, #dd8d74);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.5), 0 10px 28px rgba(81, 36, 25, 0.2);
+}
+
+.secondary-button {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.text-button {
+  padding: 9px 10px;
+  color: var(--ink-secondary);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.muted-action {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.icon-button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.primary-button:hover,
+.secondary-button:hover,
+.icon-button:hover {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
