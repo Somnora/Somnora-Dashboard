@@ -11,14 +11,14 @@ const timeline: Array<{ status: DeliveryStatus; label: string; detail: string }>
   { status: 'acknowledged', label: 'Acknowledged', detail: 'Ready to begin' },
 ]
 
-function DeliveryTimeline({ status }: { status: DeliveryStatus }) {
+function DeliveryTimeline({ status, simulated }: { status: DeliveryStatus; simulated: boolean }) {
   const currentIndex = timeline.findIndex((item) => item.status === status)
   const finalIndex = ['in-progress', 'completed'].includes(status)
     ? timeline.length - 1
     : currentIndex
 
   return (
-    <ol className="delivery-timeline" aria-label="Simulated device delivery progress">
+    <ol className="delivery-timeline" aria-label={`${simulated ? 'Simulated' : 'Live'} device delivery progress`}>
       {timeline.map((item, index) => {
         const reached = index <= finalIndex
         const current = index === finalIndex
@@ -37,10 +37,10 @@ function DeliveryTimeline({ status }: { status: DeliveryStatus }) {
 }
 
 function DemoQaControls() {
-  const { state, mission } = useWorkbench()
+  const { connection, state, mission } = useWorkbench()
   const active = !['completed', 'cancelled', 'expired'].includes(state.delivery.status)
 
-  if (!active || state.delivery.status === 'idle') return null
+  if (connection.mode !== 'demo' || !active || state.delivery.status === 'idle') return null
 
   return (
     <details className="demo-qa-controls">
@@ -66,7 +66,7 @@ function DemoQaControls() {
 }
 
 export function InvitationWorkspace() {
-  const { state, mission } = useWorkbench()
+  const { connection, state, mission } = useWorkbench()
   const { delivery, invitation } = state
 
   if (delivery.status === 'completed') {
@@ -100,7 +100,7 @@ export function InvitationWorkspace() {
         <p className="eyebrow">{delivery.status === 'expired' ? 'Handoff expired' : 'Handoff cancelled'}</p>
         <h2>No device action is active.</h2>
         <p>
-          The simulated relay stopped without implying delivery. Reset the loop when you want to try again.
+          The {delivery.simulated ? 'simulated' : 'device'} relay stopped without implying delivery. Reset the loop when you want to try again.
         </p>
         <button className="secondary-button" onClick={mission.reset} type="button">Reset invitation</button>
       </GlassPanel>
@@ -108,6 +108,7 @@ export function InvitationWorkspace() {
   }
 
   if (delivery.status === 'idle') {
+    const relayWaiting = connection.mode === 'relay' && connection.pairing?.status !== 'paired'
     return (
       <GlassPanel className="invitation-card mission-card consented-mission">
         <p className="eyebrow">Invitation accepted</p>
@@ -117,14 +118,44 @@ export function InvitationWorkspace() {
           <span className="status-dot" aria-hidden="true" />
           <div>
             <strong>Consent recorded. No delivery yet.</strong>
-            <small>The next button starts a clearly labeled local simulation.</small>
+            <small>
+              {connection.mode === 'demo'
+                ? 'The next button starts a clearly labeled local simulation.'
+                : 'Pair iPhone before the Workbench can send this bounded action.'}
+            </small>
           </div>
         </div>
-        <button className="primary-button" onClick={() => void mission.send()} type="button">
-          Send to iPhone and Watch
-        </button>
+        {relayWaiting ? (
+          <div className="relay-pairing-card">
+            <div>
+              <p className="eyebrow">Secure device pairing</p>
+              <strong>
+                {connection.pairing?.status === 'waiting'
+                  ? 'Enter this code on iPhone'
+                  : 'Generate a single-use code'}
+              </strong>
+              <small>The code expires after ten minutes. The relay session expires after two hours.</small>
+            </div>
+            {connection.pairing?.code ? (
+              <output className="pairing-code" aria-label={`Pairing code ${connection.pairing.code}`}>
+                {connection.pairing.code}
+              </output>
+            ) : (
+              <button className="primary-button" onClick={() => void connection.pair()} type="button">
+                Generate pairing code
+              </button>
+            )}
+          </div>
+        ) : (
+          <button className="primary-button" onClick={() => void mission.send()} type="button">
+            Send to iPhone and Watch
+          </button>
+        )}
+        {connection.errorMessage ? <p className="relay-error" role="alert">{connection.errorMessage}</p> : null}
         <p className="privacy-note">
-          DemoTransport runs offline. It carries the activity and status only, never photo bytes, health data, or memory evidence.
+          {connection.mode === 'demo'
+            ? 'DemoTransport runs offline. It carries the activity and status only, never photo bytes, health data, or memory evidence.'
+            : 'Relay mode authenticates both surfaces separately. Apple Watch receives no backend token, photo bytes, health data, journal content, or memory evidence.'}
         </p>
       </GlassPanel>
     )
@@ -134,13 +165,13 @@ export function InvitationWorkspace() {
     <GlassPanel className="invitation-card mission-card">
       <div className="mission-heading">
         <div>
-          <p className="eyebrow">Simulated ecosystem handoff</p>
+          <p className="eyebrow">{delivery.simulated ? 'Simulated' : 'Live'} ecosystem handoff</p>
           <h2>{invitation.title}</h2>
         </div>
-        <span className="demo-badge">Demo status</span>
+        <span className="demo-badge">{delivery.simulated ? 'Demo status' : 'Relay status'}</span>
       </div>
-      <DeliveryTimeline status={delivery.status} />
-      {delivery.status === 'acknowledged' ? (
+      <DeliveryTimeline simulated={delivery.simulated} status={delivery.status} />
+      {delivery.status === 'acknowledged' && delivery.simulated ? (
         <div className="mission-next-step">
           <p>The Watch acknowledged the invitation. The activity still starts only when you choose.</p>
           <button className="primary-button" onClick={mission.start} type="button">Start activity</button>
@@ -159,12 +190,17 @@ export function InvitationWorkspace() {
               </div>
             ))}
           </div>
-          <button className="primary-button" onClick={mission.addPhoto} type="button">
-            Add next demo photo
-          </button>
-          <p className="privacy-note">Only the count changes in relay state. The images shown here are bundled demo assets.</p>
+          {delivery.simulated ? (
+            <button className="primary-button" onClick={mission.addPhoto} type="button">
+              Add next demo photo
+            </button>
+          ) : (
+            <p>Continue on Apple Watch. This dashboard updates only after the iPhone confirms each count.</p>
+          )}
+          <p className="privacy-note">Only the count changes in relay state. The images shown here are bundled privacy-safe demo assets.</p>
         </div>
       ) : null}
+      {connection.errorMessage ? <p className="relay-error" role="alert">{connection.errorMessage}</p> : null}
       <DemoQaControls />
     </GlassPanel>
   )

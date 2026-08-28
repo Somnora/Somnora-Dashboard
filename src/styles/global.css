@@ -166,6 +166,11 @@ h3 {
   box-shadow: 0 0 0 5px rgba(173, 211, 187, 0.12);
 }
 
+.status-dot.is-waiting {
+  background: var(--coral);
+  box-shadow: 0 0 0 5px rgba(224, 143, 121, 0.12);
+}
+
 .device-status span:last-child {
   display: grid;
   gap: 1px;
@@ -494,6 +499,47 @@ h3 {
 .consent-summary small {
   color: var(--ink-secondary);
   font-size: 10px;
+}
+
+.relay-pairing-card {
+  display: flex;
+  max-width: 690px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 15px;
+  background: rgba(5, 12, 20, 0.24);
+}
+
+.relay-pairing-card > div {
+  display: grid;
+  gap: 5px;
+}
+
+.relay-pairing-card strong {
+  font-family: var(--font-serif);
+  font-size: 20px;
+}
+
+.relay-pairing-card small,
+.relay-error {
+  color: var(--ink-secondary);
+  font-size: 11px;
+}
+
+.pairing-code {
+  color: var(--ink-light);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.relay-error {
+  margin: 12px 0 0;
 }
 
 .mission-heading,

@@ -1,5 +1,15 @@
 import type { DeliveryState, DeliveryStatus } from './types'
 
+const deliveryOrder: Partial<Record<DeliveryStatus, number>> = {
+  idle: 0,
+  pending: 1,
+  'delivered-phone': 2,
+  'delivered-watch': 3,
+  acknowledged: 3,
+  'in-progress': 4,
+  completed: 5,
+}
+
 const allowedTransitions: Record<DeliveryStatus, DeliveryStatus[]> = {
   idle: ['pending'],
   pending: ['delivered-phone', 'failed', 'cancelled', 'expired'],
@@ -54,5 +64,43 @@ export function updateDeliveryProgress(
     status: count === 3 ? 'completed' : 'in-progress',
     progressCount: count as 0 | 1 | 2 | 3,
     updatedAt,
+  }
+}
+
+export function reconcileDeliverySnapshot(
+  state: DeliveryState,
+  snapshot: Pick<DeliveryState, 'status' | 'progressCount' | 'simulated'>,
+  updatedAt: string,
+): DeliveryState {
+  if (snapshot.progressCount < state.progressCount || snapshot.progressCount > 3) {
+    throw new Error(`Invalid progress count: ${snapshot.progressCount}`)
+  }
+  if (snapshot.status === 'completed' && snapshot.progressCount !== 3) {
+    throw new Error('Completion requires three discoveries')
+  }
+  if (
+    ['pending', 'delivered-phone', 'delivered-watch', 'acknowledged'].includes(snapshot.status) &&
+    snapshot.progressCount !== 0
+  ) {
+    throw new Error(`Progress is not valid while delivery is ${snapshot.status}`)
+  }
+
+  const terminal = ['failed', 'cancelled', 'expired'].includes(snapshot.status)
+  const currentRank = deliveryOrder[state.status]
+  const nextRank = deliveryOrder[snapshot.status]
+  if (!terminal && (currentRank === undefined || nextRank === undefined || nextRank < currentRank)) {
+    throw new Error(`Invalid delivery snapshot: ${state.status} to ${snapshot.status}`)
+  }
+  if (['completed', 'cancelled', 'expired'].includes(state.status) && snapshot.status !== state.status) {
+    throw new Error(`Terminal delivery cannot change from ${state.status}`)
+  }
+
+  return {
+    ...state,
+    status: snapshot.status,
+    progressCount: snapshot.progressCount,
+    simulated: snapshot.simulated,
+    updatedAt,
+    errorMessage: snapshot.status === 'failed' ? state.errorMessage : undefined,
   }
 }

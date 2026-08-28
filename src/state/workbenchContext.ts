@@ -1,15 +1,21 @@
 import { createContext, useContext } from 'react'
 import type { Dispatch } from 'react'
-import type { DemoProfile, WorkbenchState } from '../domain/types'
+import type { DemoProfile, PairingSession, WorkbenchState } from '../domain/types'
 import type { WorkbenchAction } from './reducer'
 
 export interface WorkbenchContextValue {
   state: WorkbenchState
   dispatch: Dispatch<WorkbenchAction>
   profile: DemoProfile
+  connection: {
+    mode: 'demo' | 'relay'
+    pairing: PairingSession | null
+    errorMessage: string | null
+    pair: () => Promise<void>
+  }
   mission: {
     send: () => Promise<void>
-    retry: () => void
+    retry: () => Promise<void>
     cancel: () => Promise<void>
     start: () => void
     addPhoto: () => void

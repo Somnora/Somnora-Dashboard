@@ -76,19 +76,19 @@
   Acceptance: Every primary view is recordable; the complete demo works in a fresh browser session; no emoji or prohibited gradient appears; reduced-motion and keyboard paths remain complete; seeded and simulated behavior is disclosed; production build has no secret values.
   Verify: Run `npm run typecheck`, `npm test -- --run`, `npm run build`, the full Playwright suite, `git diff --check`, inspect every required screenshot, and perform a fresh-install smoke test from the lockfile.
 
-- [ ] **10. Implement and security-test the scoped backend relay**
+- [x] **10. Implement and security-test the scoped backend relay**
   Spec ref: `spec.md > Secure Pairing Relay`, `spec.md > Workbench Relay API`, `spec.md > Relay Firestore Model`, `spec.md > Security And Privacy Controls`
   What to build: In the existing Cloud Run proxy, add isolated pairing and action handlers, strict schemas, ID-token verification, server-derived roles, hashed single-use codes, expiry, rate limits, idempotency, monotonic statuses, minimal Admin-only Firestore documents, safe logs, and explicit Workbench origin allowlisting. Do not deploy until tests pass and source-deploy authorization is clear.
   Acceptance: Missing or invalid tokens fail; browser and phone cannot cross roles or pairings; reused and expired codes fail; invalid payloads, photo data, raw health data, arbitrary URLs, HTML, and oversized messages fail; unknown origins are not permitted; valid status transitions succeed idempotently.
   Verify: Run focused Node tests for all relay security cases, the existing proxy auth, rate-limit, privacy, and logging tests, then the full proxy suite and `git diff --check`. Review the final backend diff before any source deployment.
 
-- [ ] **11. Implement the iPhone and Watch relay vertical slice**
+- [x] **11. Implement the iPhone and Watch relay vertical slice**
   Spec ref: `spec.md > iPhone Workbench Bridge`, `spec.md > Apple Watch Invitation Surface`, `spec.md > Data Flow > Pairing Flow`
   What to build: On a dedicated mobile branch, add versioned relay models, authenticated iPhone API client, pairing sheet, foreground pending-action poll, compact iPhone mission state, WatchConnectivity relay extension, Watch invitation model and view, acknowledgement, progress, completion, duplicate coalescing, reachable send, and background fallback. Reconcile all target membership without touching unrelated mobile behavior.
   Acceptance: iPhone claims a code using its Firebase ID token; only allowlisted versioned actions are accepted; Watch receives no backend token; iPhone remains the bridge; offline and unreachable states remain honest; duplicate messages create one activity; unrelated mobile behavior and the user's `tmp/` directory remain untouched.
   Verify: Run focused Swift unit tests, Watch message tests, status-transition tests, a serialized `make build`, relevant Xcode test destinations, `git diff --check`, and running iPhone and Watch simulator or hardware QA. Inspect the mobile diff before commit.
 
-- [ ] **12. Verify the integrated demo and prepare Devpost handoff**
+- [x] **12. Verify the integrated demo and prepare Devpost handoff**
   Spec ref: `spec.md > Verification Matrix > Integrated demo`, `spec.md > Demo And Submission Flow`, `prd.md > Submission Proof Points`
   What to build: Exercise real pairing and acknowledgement if the relay is verified, retain deterministic transport as the disclosed fallback, capture final dashboard, iPhone, and Watch frames, document setup and demo instructions, record tested versus seeded versus pre-existing behavior, prepare the new-work disclosure, gather repository links, and assemble the story and artifacts required for submission prep.
   Acceptance: The recordable fallback is intact; every claimed live step is freshly verified; simulated steps are labeled; security evidence is summarized without exposing secrets; screenshots clearly show the wow moment; the handoff states that Workbench work began 08-27-26 and distinguishes existing Somnora surfaces.

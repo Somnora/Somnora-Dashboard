@@ -16,6 +16,13 @@ const mission = {
   reset: vi.fn(),
 }
 
+const connection = {
+  mode: 'demo' as const,
+  pairing: null,
+  errorMessage: null,
+  pair: vi.fn(),
+}
+
 describe('EvidenceInspector', () => {
   it('shows source type, date, evidence, and correction controls', async () => {
     const user = userEvent.setup()
@@ -29,6 +36,7 @@ describe('EvidenceInspector', () => {
           },
           dispatch,
           profile: demoProfile,
+          connection,
           mission,
         }}
       >
@@ -69,6 +77,7 @@ describe('EvidenceInspector', () => {
           },
           dispatch,
           profile: demoProfile,
+          connection,
           mission,
         }}
       >

@@ -34,9 +34,20 @@ Recommended demo path:
 
 ## Honest demo boundary
 
-The current Workbench does **not** synchronize a real Somnora account, contact physical devices, upload photographs, ingest HealthKit records, or deploy the planned authenticated relay. All dashboard profile data and device-delivery states are deterministic demo fixtures and are visibly disclosed in the interface.
+The default Workbench does **not** synchronize a real Somnora account, contact physical devices, upload photographs, or ingest HealthKit records. All dashboard profile data and default device-delivery states are deterministic demo fixtures and are visibly disclosed in the interface.
 
-The intended live route preserves the security boundary **Apple Watch to iPhone to authenticated shared backend to Workbench**. There is no direct Watch-to-dashboard channel. The future relay will carry only a versioned action identifier, status, and progress count, never model credentials, raw health data, journal evidence, burn text, or photo bytes.
+An optional authenticated `RelayTransport`, a scoped Cloud Run relay, and the corresponding iPhone and Apple Watch slice are implemented and tested on isolated branches. They are not deployed. The verified architecture preserves the boundary **Apple Watch to iPhone to authenticated shared backend to Workbench**. There is no direct Watch-to-dashboard channel. The relay carries only a versioned action identifier, bounded prompt, status, and progress count, never model credentials, raw health data, journal evidence, burn text, or photo bytes.
+
+## Optional relay mode
+
+Keep `VITE_TRANSPORT=demo` for the reliable recorded path. Relay mode requires an explicitly authorized backend source deployment, exact CORS origin configuration, Firebase Anonymous Authentication, and the public Firebase web configuration listed in `.env.example`.
+
+```bash
+VITE_TRANSPORT=relay
+VITE_WORKBENCH_API_ORIGIN=https://your-authorized-relay-origin.example
+```
+
+With the remaining Firebase web values configured, the Workbench generates a six-digit single-use code. The iPhone claims that code with its own Firebase identity and remains the only bridge to Apple Watch. Do not present relay mode as live until the deployed origin, real iPhone, and real Apple Watch path have been freshly verified.
 
 ## Verification
 
@@ -53,4 +64,4 @@ npm run screenshots
 
 `npm run screenshots` regenerates the target-size visual fixtures under the ignored `screenshots/local/` folder.
 
-Planning, acceptance criteria, architecture, and build evidence live in `docs/hackathon-build/`.
+Planning, acceptance criteria, architecture, build evidence, and the Devpost handoff live in `docs/hackathon-build/`.

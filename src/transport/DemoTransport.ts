@@ -19,6 +19,7 @@ function cloneAction(action: InvitationAction): InvitationAction {
 }
 
 export class DemoTransport implements WorkbenchTransport {
+  readonly mode = 'demo' as const
   private readonly actions = new Map<string, InvitationAction>()
   private readonly idempotencyIndex = new Map<string, string>()
 

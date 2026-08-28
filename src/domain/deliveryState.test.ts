@@ -1,4 +1,8 @@
-import { transitionDelivery, updateDeliveryProgress } from './deliveryState'
+import {
+  reconcileDeliverySnapshot,
+  transitionDelivery,
+  updateDeliveryProgress,
+} from './deliveryState'
 import type { DeliveryState } from './types'
 
 const idle: DeliveryState = {
@@ -48,5 +52,44 @@ describe('delivery state', () => {
     expect(() =>
       updateDeliveryProgress(active, 1, '2026-08-27T19:00:00Z'),
     ).toThrow('Invalid progress count')
+  })
+
+  it('accepts a forward live snapshot without inventing intermediate confirmation', () => {
+    const pending: DeliveryState = {
+      status: 'pending',
+      progressCount: 0,
+      simulated: false,
+    }
+    const completed = reconcileDeliverySnapshot(
+      pending,
+      { status: 'completed', progressCount: 3, simulated: false },
+      '2026-08-28T19:00:00Z',
+    )
+
+    expect(completed.status).toBe('completed')
+    expect(completed.progressCount).toBe(3)
+    expect(completed.simulated).toBe(false)
+  })
+
+  it('rejects backward live snapshots and incomplete completion', () => {
+    const active: DeliveryState = {
+      status: 'in-progress',
+      progressCount: 2,
+      simulated: false,
+    }
+    expect(() =>
+      reconcileDeliverySnapshot(
+        active,
+        { status: 'delivered-watch', progressCount: 2, simulated: false },
+        '2026-08-28T19:00:00Z',
+      ),
+    ).toThrow()
+    expect(() =>
+      reconcileDeliverySnapshot(
+        active,
+        { status: 'completed', progressCount: 2, simulated: false },
+        '2026-08-28T19:00:00Z',
+      ),
+    ).toThrow('Completion requires three discoveries')
   })
 })

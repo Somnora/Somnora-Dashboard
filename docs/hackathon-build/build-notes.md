@@ -244,3 +244,49 @@
 - Verified 26 unit and component tests, 20 functional browser tests, one visual fixture path, type checking, lint, production build, and `git diff --check`.
 - Inspected Home at 1440 by 900 and 1280 by 800, focused About Me, Conversations, Themes, Analytics, consent, acknowledged delivery, the complete Field Note with three loaded images, burn review, burn motion, burn completion, and the activity library.
 - Scanned shipped source for prohibited Somnora background tokens, emoji, en and em dashes, and common secret signatures. No prohibited source token or credential was found.
+
+## 2026-08-28 - Build item 10
+
+### Verified scoped backend relay
+
+- Built the relay in the isolated Somnora worktree `/Users/jamesmcshane/Desktop/Somnora-Relay-Worktree` on `codex/workbench-relay`, leaving the user's active mobile branch and untracked `tmp/` content untouched.
+- Added Firebase-only Workbench routing before the proxy's legacy wildcard CORS boundary. Workbench routes use an exact origin allowlist, no-store responses, content-type hardening, and a deny-by-default response content policy.
+- Added strict versioned schemas for one allowlisted Three Beautiful Things action. Unknown fields, arbitrary URLs, HTML, photo data, raw health data, control characters, invalid dates, and payloads over 2 KB fail closed.
+- Added random six-digit pairing codes protected by HMAC at rest, ten-minute single-use expiry, two-hour pairing and action bounds, revocation, server-derived browser and phone roles, and no Watch backend credential.
+- Added Admin-only Firestore adapter paths for code hashes, pairings, and nested actions. Delivery can resume from pending, iPhone-delivered, Watch-delivered, or in-progress states after an iPhone foreground restart.
+- Added scoped endpoint quotas using the existing Redis limiter, idempotent action creation, monotonic status transitions, progress bounds, duplicate completion safety, browser-only relay cancellation, and safe hashed identifier logging.
+- Added deployment documentation that requires a managed pairing secret, exact production origin, direct Firestore client-access denial, and explicit source-deploy authorization. No deployment was performed.
+- Verified syntax checks and focused relay, Firestore adapter, authentication, CORS, role-isolation, expiry, rate-limit, privacy, and logging tests.
+- Ran the complete proxy suite on Node 22.23.2: 163 tests passed with zero failures, skips, or cancellations.
+- Verified `git diff --check`, common credential scans, raw-content logging scans, and final staged-diff review before committing backend revert point `4feda019`.
+
+## 2026-08-28 - Build item 11
+
+### Verified iPhone and Apple Watch relay slice
+
+- Built the mobile slice in the isolated worktree on `codex/workbench-device-slice`, preserving the user's active Somnora branch and untracked `tmp/` directory.
+- Added a Firebase-authenticated iPhone relay client, short-lived pairing UI, foreground polling coordinator, bounded response checks, protocol and action allowlists, and monotonic status validation.
+- Added a minimal WatchConnectivity contract containing only action identity, activity type, title, prompt, target count, expiry, protocol version, and progress status. The Apple Watch receives no backend token, browser credential, health data, photo bytes, journal data, or memory evidence.
+- Added reachable Watch delivery with an explicit receipt, background transfer fallback, duplicate coalescing, local file-protected invitation recovery, cancellation, expiry, progress, and completion.
+- Added iPhone and Apple Watch views using the existing Somnora visual systems, with honest queued and acknowledged states and no new use of deprecated background tokens.
+- Reconciled Xcode target membership and repaired the project-membership helper so it is repository-relative, quotes paths safely, and remains idempotent in an isolated worktree.
+- Verified the complete iOS and Watch build through `make concurrency-check`; the build succeeded for both simulator architectures and the concurrency ratchet reported no new actor or sendability warnings.
+- Verified `make quality-gate`, project parsing, membership-script idempotence, `git diff --check`, credential and prohibited-token scans, and focused simulator tests: 12 passed with zero failures or skips.
+- Committed the device revert point as `c7b026f7`. The relay source remains undeployed, and physical iPhone and Apple Watch behavior has not yet been claimed as live-verified.
+
+## 2026-08-28 - Build item 12
+
+### Integrated evidence and Devpost handoff
+
+- Added the optional browser `RelayTransport`, lazy Firebase anonymous authentication, short-lived pairing-code UI, rate-limit-safe status polling, strict response validation, monotonic live-state reconciliation, and clear demo versus relay labels.
+- Kept `DemoTransport` as the default recordable path. The seeded profile and offline hero loop remain independent of Firebase, Cloud Run, iPhone, Apple Watch, and network availability.
+- Added focused relay tests for authenticated minimal requests, pairing, action mapping, unsupported action rejection, response-size enforcement, and missing-token failure.
+- Regenerated and inspected final Home, focused About Me, acknowledged handoff, completed Field Note, burn, and ecosystem screenshots.
+- Launched the new invitation surface on an actual watchOS 26.5 simulator using a privacy-safe invitation stored only in simulator preferences. The captured frame shows Nora's invitation, progress target, and Start control.
+- A fresh iPhone CI launch using the placeholder Firebase configuration did not produce a useful pairing-sheet frame. The handoff identifies existing iPhone screenshots only as pre-existing ecosystem context and requires a properly configured iPhone capture before final video assembly.
+- Added `docs/hackathon-build/devpost-handoff.md` with the title, pitch, architecture, built-with list, demo path, screenshot inventory, test evidence, limitations, security summary, repository references, claim guardrails, and new-versus-existing disclosure.
+- Confirmed the submission project start date is 08-27-26 for the new Workbench and cross-device coordination. The original Somnora iPhone and Watch apps are explicitly disclosed as pre-existing.
+- Final Workbench verification: 31 unit and component tests passed, lint passed with no warnings, production build passed, 20 functional Playwright tests passed, and the visual fixture suite passed.
+- Final proxy verification: 163 tests passed with zero failures, skips, or cancellations.
+- Mobile verification remains 12 focused tests passed plus successful full iOS and Watch build, concurrency ratchet, quality gate, target-membership check, and diff review.
+- No backend or web deployment was performed. Real deployed pairing, real iPhone pairing UI, physical Watch handoff, and complete live acknowledgement remain unverified and are not submission claims.

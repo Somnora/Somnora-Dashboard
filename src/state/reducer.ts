@@ -1,5 +1,9 @@
 import { applyInvitationAdjustment, createHeroInvitation } from '../domain/invitationPolicy'
-import { transitionDelivery, updateDeliveryProgress } from '../domain/deliveryState'
+import {
+  reconcileDeliverySnapshot,
+  transitionDelivery,
+  updateDeliveryProgress,
+} from '../domain/deliveryState'
 import { setMemoryCorrection } from '../domain/memoryOverlay'
 import type {
   AutonomyLevel,
@@ -27,11 +31,18 @@ export type WorkbenchAction =
   | { type: 'decline-invitation' }
   | { type: 'less-like-this' }
   | { type: 'select-memory-node'; nodeId: string | null }
-  | { type: 'delivery-started'; actionId: string; updatedAt: string }
+  | { type: 'delivery-started'; actionId: string; simulated: boolean; updatedAt: string }
   | { type: 'delivery-status'; status: DeliveryStatus; updatedAt: string }
+  | {
+      type: 'delivery-snapshot'
+      status: DeliveryStatus
+      progressCount: 0 | 1 | 2 | 3
+      simulated: boolean
+      updatedAt: string
+    }
   | { type: 'delivery-progress'; count: number; updatedAt: string }
   | { type: 'delivery-error'; message: string; updatedAt: string }
-  | { type: 'reset-mission' }
+  | { type: 'reset-mission'; simulated?: boolean }
   | { type: 'correct-memory'; correction: MemoryCorrection }
 
 export function workbenchReducer(
@@ -92,6 +103,7 @@ export function workbenchReducer(
         delivery: {
           ...transitionDelivery(state.delivery, 'pending', action.updatedAt),
           actionId: action.actionId,
+          simulated: action.simulated,
           errorMessage: undefined,
         },
       }
@@ -113,6 +125,19 @@ export function workbenchReducer(
           action.updatedAt,
         ),
       }
+    case 'delivery-snapshot':
+      return {
+        ...state,
+        delivery: reconcileDeliverySnapshot(
+          state.delivery,
+          {
+            status: action.status,
+            progressCount: action.progressCount,
+            simulated: action.simulated,
+          },
+          action.updatedAt,
+        ),
+      }
     case 'delivery-error':
       return {
         ...state,
@@ -129,7 +154,7 @@ export function workbenchReducer(
         delivery: {
           status: 'idle',
           progressCount: 0,
-          simulated: true,
+          simulated: action.simulated ?? true,
         },
       }
     case 'correct-memory':

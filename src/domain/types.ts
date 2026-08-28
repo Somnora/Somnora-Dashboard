@@ -160,9 +160,10 @@ export interface InvitationAction {
 
 export interface PairingSession {
   id: string
-  status: 'paired'
+  status: 'waiting' | 'paired'
   simulated: boolean
   expiresAt: string
+  code?: string
 }
 
 export interface PairingStatus {
