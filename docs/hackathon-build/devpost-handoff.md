@@ -155,7 +155,7 @@ The fresh iPhone CI launch with a placeholder Firebase configuration did not pro
 - Secure backend relay commit: `4feda019`
 - iPhone and Apple Watch relay commit: `c7b026f7`
 - Workbench MVP commit: `728dca1`
-- Workbench final QA commit: add after final commit
+- Workbench final QA commit: `ea6a6f0`
 - Workbench public repository URL: pending
 
 ## Submission claim guardrails
