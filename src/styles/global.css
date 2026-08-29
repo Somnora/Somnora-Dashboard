@@ -501,6 +501,71 @@ h3 {
   font-size: 10px;
 }
 
+.runtime-contract {
+  margin: 16px 0 20px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 15px;
+  background: rgba(5, 12, 20, 0.22);
+}
+
+.runtime-contract-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 13px;
+}
+
+.runtime-contract-heading .eyebrow {
+  margin-bottom: 4px;
+}
+
+.runtime-contract-heading strong {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.runtime-contract-heading > span {
+  padding: 5px 8px;
+  border: 1px solid rgba(173, 211, 187, 0.25);
+  border-radius: 999px;
+  color: var(--success);
+  background: rgba(173, 211, 187, 0.07);
+  font-size: 8px;
+  font-weight: 750;
+  text-transform: capitalize;
+}
+
+.runtime-contract dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0;
+}
+
+.runtime-contract dl div {
+  padding: 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.runtime-contract dt {
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.runtime-contract dd {
+  margin: 0;
+  color: var(--ink-secondary);
+  font-size: 9px;
+  line-height: 1.35;
+}
+
 .relay-pairing-card {
   display: flex;
   max-width: 690px;
@@ -2523,6 +2588,10 @@ h3 {
   .delivery-timeline,
   .field-note-collage {
     grid-template-columns: 1fr;
+  }
+
+  .runtime-contract dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .timeline-introduction {

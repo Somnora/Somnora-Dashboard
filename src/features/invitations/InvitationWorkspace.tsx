@@ -3,6 +3,7 @@ import { useWorkbench } from '../../state/workbenchContext'
 import { ErrorState } from '../common/ErrorState'
 import { GlassPanel } from '../common/GlassPanel'
 import { FieldNote } from './FieldNote'
+import { ActionRuntimeSummary } from './ActionRuntimeSummary'
 
 const timeline: Array<{ status: DeliveryStatus; label: string; detail: string }> = [
   { status: 'pending', label: 'Pending', detail: 'Accepted in Workbench' },
@@ -125,6 +126,7 @@ export function InvitationWorkspace() {
             </small>
           </div>
         </div>
+        <ActionRuntimeSummary delivery={delivery} />
         {relayWaiting ? (
           <div className="relay-pairing-card">
             <div>
@@ -171,6 +173,7 @@ export function InvitationWorkspace() {
         <span className="demo-badge">{delivery.simulated ? 'Demo status' : 'Relay status'}</span>
       </div>
       <DeliveryTimeline simulated={delivery.simulated} status={delivery.status} />
+      <ActionRuntimeSummary delivery={delivery} />
       {delivery.status === 'acknowledged' && delivery.simulated ? (
         <div className="mission-next-step">
           <p>The Watch acknowledged the invitation. The activity still starts only when you choose.</p>
@@ -181,9 +184,9 @@ export function InvitationWorkspace() {
         <div className="mission-progress">
           <div className="progress-heading">
             <p className="eyebrow">Field progress</p>
-            <strong>{delivery.progressCount} of 3</strong>
+            <strong>{delivery.progressCount} of {delivery.progressTarget}</strong>
           </div>
-          <div className="photo-progress" aria-label={`${delivery.progressCount} of 3 demo photos complete`}>
+          <div className="photo-progress" aria-label={`${delivery.progressCount} of ${delivery.progressTarget} demo discoveries complete`}>
             {[0, 1, 2].map((index) => (
               <div className={index < delivery.progressCount ? 'is-complete' : ''} key={index}>
                 {index < delivery.progressCount ? <img alt="" src={`/assets/demo-field-notes/${['glass', 'ocean', 'rain'][index]}.jpg`} /> : <span>{index + 1}</span>}

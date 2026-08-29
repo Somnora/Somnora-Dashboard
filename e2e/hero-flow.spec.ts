@@ -4,6 +4,10 @@ async function acceptAndSend(page: import('@playwright/test').Page) {
   await page.goto('/')
   await page.getByRole('button', { name: 'Accept invitation' }).click()
   await expect(page.getByText('Consent recorded. No delivery yet.')).toBeVisible()
+  const runtime = page.getByRole('region', { name: 'Nora action runtime contract' })
+  await expect(runtime.getByText('Explicit, single action')).toBeVisible()
+  await expect(runtime.getByText('Workbench to iPhone to Watch')).toBeVisible()
+  await expect(runtime.getByText('Status only, memory waits')).toBeVisible()
   await page.getByRole('button', { name: 'Send to iPhone and Watch' }).click()
 }
 
@@ -64,6 +68,8 @@ test('refresh restores safe demo progress and resumes confirmed delivery', async
   )
   expect(stored).not.toContain('photo')
   expect(stored).not.toContain('reflection')
+  expect(stored).not.toContain('prompt')
+  expect(stored).not.toContain('consent')
 })
 
 test('failure stays honest and retry restarts confirmation', async ({ page }) => {

@@ -11,6 +11,7 @@ import type {
   Destination,
   InvitationAdjustment,
   MemoryCorrection,
+  NoraActionSnapshot,
   DeliveryStatus,
   StretchLevel,
   WorkbenchState,
@@ -31,13 +32,11 @@ export type WorkbenchAction =
   | { type: 'decline-invitation' }
   | { type: 'less-like-this' }
   | { type: 'select-memory-node'; nodeId: string | null }
-  | { type: 'delivery-started'; actionId: string; simulated: boolean; updatedAt: string }
+  | { type: 'delivery-started'; action: NoraActionSnapshot; updatedAt: string }
   | { type: 'delivery-status'; status: DeliveryStatus; updatedAt: string }
   | {
       type: 'delivery-snapshot'
-      status: DeliveryStatus
-      progressCount: 0 | 1 | 2 | 3
-      simulated: boolean
+      action: NoraActionSnapshot
       updatedAt: string
     }
   | { type: 'delivery-progress'; count: number; updatedAt: string }
@@ -101,9 +100,18 @@ export function workbenchReducer(
       return {
         ...state,
         delivery: {
-          ...transitionDelivery(state.delivery, 'pending', action.updatedAt),
-          actionId: action.actionId,
-          simulated: action.simulated,
+          ...state.delivery,
+          status: action.action.status,
+          actionId: action.action.id,
+          actionType: action.action.actionType,
+          route: action.action.route,
+          progressCount: action.action.progress.completed,
+          progressTarget: action.action.progress.target,
+          progressUnit: action.action.progress.unit,
+          expiresAt: action.action.expiresAt,
+          outcome: action.action.outcome,
+          simulated: action.action.simulated,
+          updatedAt: action.updatedAt,
           errorMessage: undefined,
         },
       }
@@ -128,15 +136,26 @@ export function workbenchReducer(
     case 'delivery-snapshot':
       return {
         ...state,
-        delivery: reconcileDeliverySnapshot(
-          state.delivery,
-          {
-            status: action.status,
-            progressCount: action.progressCount,
-            simulated: action.simulated,
-          },
-          action.updatedAt,
-        ),
+        delivery: {
+          ...reconcileDeliverySnapshot(
+            {
+              ...state.delivery,
+              progressTarget: action.action.progress.target,
+              progressUnit: action.action.progress.unit,
+            },
+            {
+              status: action.action.status,
+              progressCount: action.action.progress.completed,
+              simulated: action.action.simulated,
+            },
+            action.updatedAt,
+          ),
+          actionId: action.action.id,
+          actionType: action.action.actionType,
+          route: action.action.route,
+          expiresAt: action.action.expiresAt,
+          outcome: action.action.outcome,
+        },
       }
     case 'delivery-error':
       return {
@@ -154,6 +173,8 @@ export function workbenchReducer(
         delivery: {
           status: 'idle',
           progressCount: 0,
+          progressTarget: 3,
+          progressUnit: 'discoveries',
           simulated: action.simulated ?? true,
         },
       }

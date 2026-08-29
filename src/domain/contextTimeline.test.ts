@@ -45,6 +45,8 @@ describe('buildContextTimeline', () => {
       delivery: {
         status: 'in-progress',
         progressCount: 2,
+        progressTarget: 3,
+        progressUnit: 'discoveries',
         simulated: true,
         actionId: 'demo-action',
         updatedAt: '2026-08-27T19:08:00.000Z',
@@ -52,7 +54,7 @@ describe('buildContextTimeline', () => {
     })
     const delivery = events.find((event) => event.id === 'delivery-demo-action')
 
-    expect(delivery?.summary).toContain('2 of 3 private field notes')
+    expect(delivery?.summary).toContain('2 of 3 discoveries')
     expect(delivery?.sourceLabel).toBe('Simulated device relay')
   })
 })

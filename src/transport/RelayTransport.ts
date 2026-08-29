@@ -1,7 +1,8 @@
+import { validateActionSnapshot } from '../domain/actionRuntime'
 import type {
-  DeliveryStatus,
-  InvitationAction,
-  InvitationDispatch,
+  NoraActionDispatch,
+  NoraActionSnapshot,
+  NoraActionStatus,
   PairingSession,
   PairingStatus,
 } from '../domain/types'
@@ -38,14 +39,16 @@ interface ActionEnvelope {
     }
     status: string
     progressCount: number
+    updatedAt?: string
     expiresAt: string
   }
 }
 
-const statusMap: Record<string, DeliveryStatus> = {
+const statusMap: Record<string, NoraActionStatus> = {
   pending: 'pending',
   delivered_phone: 'delivered-phone',
   delivered_watch: 'delivered-watch',
+  acknowledged: 'acknowledged',
   in_progress: 'in-progress',
   completed: 'completed',
   failed: 'failed',
@@ -60,7 +63,11 @@ function requireUUID(value: string, name: string): string {
   return value
 }
 
-function requireAction(envelope: ActionEnvelope, invitationId: string): InvitationAction {
+function requireAction(
+  envelope: ActionEnvelope,
+  invitationId: string,
+  dispatch?: NoraActionDispatch,
+): NoraActionSnapshot {
   const action = envelope.workbenchAction
   if (
     envelope.ok !== true ||
@@ -77,10 +84,18 @@ function requireAction(envelope: ActionEnvelope, invitationId: string): Invitati
   return {
     id: action.actionId,
     invitationId,
+    actionType: 'three-beautiful-things',
     status: statusMap[action.status],
-    progressCount: action.progressCount as 0 | 1 | 2 | 3,
+    progress: {
+      kind: dispatch?.progress.kind ?? 'count',
+      target: dispatch?.progress.target ?? 3,
+      unit: dispatch?.progress.unit ?? 'discoveries',
+      completed: action.progressCount,
+    },
+    route: dispatch?.route ?? 'watch-via-iphone',
     simulated: false,
     expiresAt: action.expiresAt,
+    updatedAt: action.updatedAt ?? new Date().toISOString(),
   }
 }
 
@@ -88,6 +103,8 @@ export class RelayTransport implements WorkbenchTransport {
   readonly mode = 'relay' as const
   private pairingId: string | null = null
   private readonly invitationIds = new Map<string, string>()
+  private readonly dispatches = new Map<string, NoraActionDispatch>()
+  private readonly snapshots = new Map<string, NoraActionSnapshot>()
 
   constructor(
     private readonly baseURL: string,
@@ -143,10 +160,12 @@ export class RelayTransport implements WorkbenchTransport {
     return { id, status, simulated: false }
   }
 
-  async sendInvitation(invitation: InvitationDispatch): Promise<InvitationAction> {
+  async sendAction(dispatch: NoraActionDispatch): Promise<NoraActionSnapshot> {
+    if (dispatch.actionType !== 'three-beautiful-things') {
+      throw new Error('The live relay does not support this action type yet.')
+    }
     const pairingId = this.requirePairing()
-    const idempotencyKey = requireUUID(invitation.idempotencyKey, 'Idempotency key')
-    const expiresAt = new Date(Date.now() + 90 * 60 * 1000).toISOString()
+    const idempotencyKey = requireUUID(dispatch.idempotencyKey, 'Idempotency key')
     const envelope = await this.request<ActionEnvelope>('/workbench/actions', {
       method: 'POST',
       body: JSON.stringify({
@@ -155,37 +174,60 @@ export class RelayTransport implements WorkbenchTransport {
         action: {
           protocolVersion,
           type: 'three_beautiful_things',
-          title: invitation.title,
-          prompt: invitation.prompt,
-          progressTarget: 3,
-          expiresAt,
+          title: dispatch.title,
+          prompt: dispatch.prompt,
+          progressTarget: dispatch.progress.target,
+          expiresAt: dispatch.expiresAt,
         },
       }),
     })
-    const action = requireAction(envelope, invitation.invitationId)
-    this.invitationIds.set(action.id, invitation.invitationId)
+    const action = this.acceptSnapshot(
+      requireAction(envelope, dispatch.invitationId, dispatch),
+      dispatch,
+    )
+    this.invitationIds.set(action.id, dispatch.invitationId)
+    this.dispatches.set(action.id, dispatch)
     return action
   }
 
-  async getActionStatus(actionId: string): Promise<InvitationAction> {
+  async getActionStatus(actionId: string): Promise<NoraActionSnapshot> {
     const envelope = await this.request<ActionEnvelope>(
       `/workbench/actions/${encodeURIComponent(actionId)}`,
     )
-    return requireAction(
+    const dispatch = this.dispatches.get(actionId)
+    const action = requireAction(
       envelope,
       this.invitationIds.get(actionId) ?? 'three-beautiful-things-v1',
+      dispatch,
     )
+    return dispatch ? this.acceptSnapshot(action, dispatch) : action
   }
 
-  async cancelAction(actionId: string): Promise<InvitationAction> {
+  async cancelAction(actionId: string): Promise<NoraActionSnapshot> {
     const envelope = await this.request<ActionEnvelope>(
       `/workbench/actions/${encodeURIComponent(actionId)}`,
       { method: 'DELETE' },
     )
-    return requireAction(
+    const dispatch = this.dispatches.get(actionId)
+    const action = requireAction(
       envelope,
       this.invitationIds.get(actionId) ?? 'three-beautiful-things-v1',
+      dispatch,
     )
+    return dispatch ? this.acceptSnapshot(action, dispatch) : action
+  }
+
+  private acceptSnapshot(
+    candidate: NoraActionSnapshot,
+    dispatch: NoraActionDispatch,
+  ): NoraActionSnapshot {
+    const accepted = validateActionSnapshot(
+      dispatch,
+      candidate,
+      this.snapshots.get(candidate.id),
+    )
+    this.snapshots.set(accepted.id, accepted)
+    return accepted
   }
 
   private requirePairing(): string {

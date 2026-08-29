@@ -17,6 +17,8 @@ export const initialWorkbenchState: WorkbenchState = {
   delivery: {
     status: 'idle',
     progressCount: 0,
+    progressTarget: 3,
+    progressUnit: 'discoveries',
     simulated: true,
   },
   whyOpen: false,

@@ -16,12 +16,45 @@ interface SafeDemoProgress {
   invitationAccepted: boolean
   delivery: Pick<
     DeliveryState,
-    'status' | 'progressCount' | 'simulated' | 'actionId'
+    | 'status'
+    | 'progressCount'
+    | 'progressTarget'
+    | 'progressUnit'
+    | 'simulated'
+    | 'actionId'
+    | 'actionType'
+    | 'route'
+    | 'expiresAt'
+    | 'updatedAt'
   >
 }
 
 const autonomyValues: AutonomyLevel[] = ['quiet', 'balanced', 'active']
 const stretchValues: StretchLevel[] = ['gentle', 'open', 'bold']
+const deliveryStatuses: DeliveryState['status'][] = [
+  'idle', 'pending', 'delivered-phone', 'delivered-watch', 'acknowledged',
+  'in-progress', 'completed', 'failed', 'cancelled', 'expired',
+]
+const actionTypes: NonNullable<DeliveryState['actionType']>[] = [
+  'three-beautiful-things', 'breathing-reset', 'six-line-story', 'tiny-detour',
+]
+const actionRoutes: NonNullable<DeliveryState['route']>[] = [
+  'workbench-only', 'iphone', 'watch-via-iphone',
+]
+
+function safeOptionalIdentifier(value: unknown): string | undefined {
+  return typeof value === 'string' && /^[a-z0-9-]{1,160}$/i.test(value)
+    ? value
+    : undefined
+}
+
+function safeOptionalISODate(value: unknown): string | undefined {
+  return typeof value === 'string' &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value) &&
+    Number.isFinite(Date.parse(value))
+      ? value
+      : undefined
+}
 
 export function loadPreferences(storage: Storage): SafePreferences | null {
   try {
@@ -57,21 +90,49 @@ export function loadDemoProgress(storage: Storage): SafeDemoProgress | null {
     const delivery = (value as Record<string, unknown>).delivery
     if (!delivery || typeof delivery !== 'object') return null
     const record = delivery as Record<string, unknown>
+    const progressTarget =
+      Number.isInteger(record.progressTarget) &&
+      (record.progressTarget as number) > 0 &&
+      (record.progressTarget as number) <= 3_600
+        ? record.progressTarget as number
+        : 3
     if (
-      typeof record.status !== 'string' ||
-      typeof record.progressCount !== 'number' ||
+      !deliveryStatuses.includes(record.status as DeliveryState['status']) ||
+      !Number.isInteger(record.progressCount) ||
+      (record.progressCount as number) < 0 ||
+      (record.progressCount as number) > progressTarget ||
       record.simulated !== true
     ) {
       return null
     }
+    const status = record.status as DeliveryState['status']
+    const progressCount = record.progressCount as number
+    if (
+      (['idle', 'pending', 'delivered-phone', 'delivered-watch', 'acknowledged'].includes(status) &&
+        progressCount !== 0) ||
+      (status === 'completed' && progressCount !== progressTarget)
+    ) return null
     return {
       invitationAccepted: (value as Record<string, unknown>).invitationAccepted === true,
       delivery: {
-        status: record.status as DeliveryState['status'],
-        progressCount: record.progressCount as DeliveryState['progressCount'],
+        status,
+        progressCount,
+        progressTarget,
+        progressUnit:
+          typeof record.progressUnit === 'string' &&
+          /^[a-z ]{1,32}$/i.test(record.progressUnit)
+            ? record.progressUnit
+            : 'discoveries',
         simulated: true,
-        actionId:
-          typeof record.actionId === 'string' ? record.actionId : undefined,
+        actionId: safeOptionalIdentifier(record.actionId),
+        actionType: actionTypes.includes(record.actionType as NonNullable<DeliveryState['actionType']>)
+          ? record.actionType as DeliveryState['actionType']
+          : undefined,
+        route: actionRoutes.includes(record.route as NonNullable<DeliveryState['route']>)
+          ? record.route as DeliveryState['route']
+          : undefined,
+        expiresAt: safeOptionalISODate(record.expiresAt),
+        updatedAt: safeOptionalISODate(record.updatedAt),
       },
     }
   } catch {

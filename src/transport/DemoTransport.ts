@@ -1,26 +1,36 @@
+import { validateActionSnapshot } from '../domain/actionRuntime'
 import type {
-  DeliveryStatus,
-  InvitationAction,
-  InvitationDispatch,
+  NoraActionDispatch,
+  NoraActionSnapshot,
+  NoraActionStatus,
   PairingSession,
   PairingStatus,
 } from '../domain/types'
 import type { WorkbenchTransport } from './WorkbenchTransport'
 
-const deliverySequence: DeliveryStatus[] = [
+const deliverySequence: NoraActionStatus[] = [
   'pending',
   'delivered-phone',
   'delivered-watch',
   'acknowledged',
 ]
 
-function cloneAction(action: InvitationAction): InvitationAction {
-  return { ...action }
+function cloneSnapshot(snapshot: NoraActionSnapshot): NoraActionSnapshot {
+  return {
+    ...snapshot,
+    progress: { ...snapshot.progress },
+    outcome: snapshot.outcome ? { ...snapshot.outcome } : undefined,
+  }
+}
+
+function nextTimestamp(snapshot: NoraActionSnapshot): string {
+  return new Date(Math.max(Date.now(), Date.parse(snapshot.updatedAt) + 1)).toISOString()
 }
 
 export class DemoTransport implements WorkbenchTransport {
   readonly mode = 'demo' as const
-  private readonly actions = new Map<string, InvitationAction>()
+  private readonly actions = new Map<string, NoraActionSnapshot>()
+  private readonly dispatches = new Map<string, NoraActionDispatch>()
   private readonly idempotencyIndex = new Map<string, string>()
 
   async pair(): Promise<PairingSession> {
@@ -28,7 +38,7 @@ export class DemoTransport implements WorkbenchTransport {
       id: 'demo-pairing-local',
       status: 'paired',
       simulated: true,
-      expiresAt: '2026-08-28T00:00:00.000Z',
+      expiresAt: '2099-08-28T00:00:00.000Z',
     }
   }
 
@@ -40,90 +50,116 @@ export class DemoTransport implements WorkbenchTransport {
     }
   }
 
-  async sendInvitation(
-    invitation: InvitationDispatch,
-  ): Promise<InvitationAction> {
-    const existingId = this.idempotencyIndex.get(invitation.idempotencyKey)
+  async sendAction(dispatch: NoraActionDispatch): Promise<NoraActionSnapshot> {
+    const existingId = this.idempotencyIndex.get(dispatch.idempotencyKey)
     if (existingId) {
       const existing = this.actions.get(existingId)
-      if (existing) return cloneAction(existing)
+      if (existing) return cloneSnapshot(existing)
     }
 
-    const action: InvitationAction = {
-      id: `demo-action-${invitation.idempotencyKey}`,
-      invitationId: invitation.invitationId,
+    const snapshot = validateActionSnapshot(dispatch, {
+      id: `demo-action-${dispatch.idempotencyKey}`,
+      invitationId: dispatch.invitationId,
+      actionType: dispatch.actionType,
       status: 'pending',
-      progressCount: 0,
+      progress: { ...dispatch.progress, completed: 0 },
+      route: dispatch.route,
       simulated: true,
-      expiresAt: '2026-08-28T00:00:00.000Z',
-    }
-    this.actions.set(action.id, action)
-    this.idempotencyIndex.set(invitation.idempotencyKey, action.id)
-    return cloneAction(action)
+      expiresAt: dispatch.expiresAt,
+      updatedAt: dispatch.createdAt,
+    })
+    this.actions.set(snapshot.id, snapshot)
+    this.dispatches.set(snapshot.id, dispatch)
+    this.idempotencyIndex.set(dispatch.idempotencyKey, snapshot.id)
+    return cloneSnapshot(snapshot)
   }
 
-  async getActionStatus(actionId: string): Promise<InvitationAction> {
-    const action = this.requireAction(actionId)
-    const index = deliverySequence.indexOf(action.status)
+  async getActionStatus(actionId: string): Promise<NoraActionSnapshot> {
+    const current = this.requireAction(actionId)
+    const index = deliverySequence.indexOf(current.status)
     if (index >= 0 && index < deliverySequence.length - 1) {
-      action.status = deliverySequence[index + 1]
+      return this.replaceSnapshot(current, {
+        ...current,
+        status: deliverySequence[index + 1],
+        updatedAt: nextTimestamp(current),
+      })
     }
-    return cloneAction(action)
+    return cloneSnapshot(current)
   }
 
-  async cancelAction(actionId: string): Promise<InvitationAction> {
-    const action = this.requireAction(actionId)
-    if (!['completed', 'expired'].includes(action.status)) {
-      action.status = 'cancelled'
-    }
-    return cloneAction(action)
-  }
-
-  restoreAction(
-    actionId: string,
-    invitationId: string,
-    status: DeliveryStatus,
-    progressCount: 0 | 1 | 2 | 3,
-  ): void {
-    if (this.actions.has(actionId)) return
-    this.actions.set(actionId, {
-      id: actionId,
-      invitationId,
-      status,
-      progressCount,
-      simulated: true,
-      expiresAt: '2026-08-28T00:00:00.000Z',
+  async cancelAction(actionId: string): Promise<NoraActionSnapshot> {
+    const current = this.requireAction(actionId)
+    if (['completed', 'expired'].includes(current.status)) return cloneSnapshot(current)
+    return this.replaceSnapshot(current, {
+      ...current,
+      status: 'cancelled',
+      updatedAt: nextTimestamp(current),
     })
   }
 
-  retryAction(actionId: string): InvitationAction {
-    const action = this.requireAction(actionId)
-    action.status = 'pending'
-    action.progressCount = 0
-    return cloneAction(action)
+  restoreAction(dispatch: NoraActionDispatch, snapshot: NoraActionSnapshot): void {
+    if (this.actions.has(snapshot.id)) return
+    const restored = validateActionSnapshot(dispatch, snapshot)
+    this.actions.set(restored.id, restored)
+    this.dispatches.set(restored.id, dispatch)
+    this.idempotencyIndex.set(dispatch.idempotencyKey, restored.id)
   }
 
-  failAction(actionId: string): InvitationAction {
-    const action = this.requireAction(actionId)
-    action.status = 'failed'
-    return cloneAction(action)
+  retryAction(actionId: string): NoraActionSnapshot {
+    const current = this.requireAction(actionId)
+    return this.replaceSnapshot(current, {
+      ...current,
+      status: 'pending',
+      progress: { ...current.progress, completed: 0 },
+      outcome: undefined,
+      updatedAt: nextTimestamp(current),
+    })
   }
 
-  expireAction(actionId: string): InvitationAction {
-    const action = this.requireAction(actionId)
-    action.status = 'expired'
-    return cloneAction(action)
+  failAction(actionId: string): NoraActionSnapshot {
+    const current = this.requireAction(actionId)
+    return this.replaceSnapshot(current, {
+      ...current,
+      status: 'failed',
+      updatedAt: nextTimestamp(current),
+    })
   }
 
-  recordProgress(actionId: string, count: number): InvitationAction {
-    const action = this.requireAction(actionId)
-    const bounded = Math.min(3, Math.max(action.progressCount, count)) as 0 | 1 | 2 | 3
-    action.progressCount = bounded
-    action.status = bounded === 3 ? 'completed' : 'in-progress'
-    return cloneAction(action)
+  expireAction(actionId: string): NoraActionSnapshot {
+    const current = this.requireAction(actionId)
+    return this.replaceSnapshot(current, {
+      ...current,
+      status: 'expired',
+      updatedAt: current.expiresAt,
+    })
   }
 
-  private requireAction(actionId: string): InvitationAction {
+  recordProgress(actionId: string, count: number): NoraActionSnapshot {
+    const current = this.requireAction(actionId)
+    const completed = Math.min(
+      current.progress.target,
+      Math.max(current.progress.completed, count),
+    )
+    return this.replaceSnapshot(current, {
+      ...current,
+      progress: { ...current.progress, completed },
+      status: completed === current.progress.target ? 'completed' : 'in-progress',
+      updatedAt: nextTimestamp(current),
+    })
+  }
+
+  private replaceSnapshot(
+    previous: NoraActionSnapshot,
+    candidate: NoraActionSnapshot,
+  ): NoraActionSnapshot {
+    const dispatch = this.dispatches.get(previous.id)
+    if (!dispatch) throw new Error(`Missing demo action contract: ${previous.id}`)
+    const next = validateActionSnapshot(dispatch, candidate, previous)
+    this.actions.set(next.id, next)
+    return cloneSnapshot(next)
+  }
+
+  private requireAction(actionId: string): NoraActionSnapshot {
     const action = this.actions.get(actionId)
     if (!action) throw new Error(`Unknown demo action: ${actionId}`)
     return action

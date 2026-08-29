@@ -290,3 +290,18 @@
 - Final proxy verification: 163 tests passed with zero failures, skips, or cancellations.
 - Mobile verification remains 12 focused tests passed plus successful full iOS and Watch build, concurrency ratchet, quality gate, target-membership check, and diff review.
 - No backend or web deployment was performed. Real deployed pairing, real iPhone pairing UI, physical Watch handoff, and complete live acknowledgement remain unverified and are not submission claims.
+
+## 2026-08-28 - Ecosystem expansion step 2
+
+### Generalized Nora Action Runtime
+
+- Replaced the hero-specific transport contract with a reusable versioned action contract covering typed input, explicit single-action consent, allowed route, progress target, expiry, cancellation, and outcome.
+- Registered Three Beautiful Things, Breathing Reset, Six Line Story, and Tiny Detour without exposing unfinished controls or claiming that all four have live device adapters.
+- Kept iPhone as the only Watch bridge. Workbench-only, iPhone, and Watch-through-iPhone routes are validated per action type.
+- Added guarded lifecycle and snapshot validation for identity, contract matching, timestamp order, progress bounds, monotonic transitions, expiry, and completion.
+- Added privacy-safe outcomes. Completion waits for a separate user memory choice, while failure, cancellation, and expiry are not eligible for memory.
+- Refactored the deterministic demo and optional relay transports under the same runtime. The existing live relay remains explicitly limited to Three Beautiful Things protocol version 1.
+- Added a visible runtime summary to the accepted and active hero states so consent, route, progress boundary, and memory policy are inspectable during the demo.
+- Extended safe session recovery with bounded status metadata only. Prompts, consent receipts, private writing, photos, health data, and memory evidence remain outside browser storage.
+- Added `docs/action-runtime.md` as the implementation and trust-boundary reference.
+- Verified 45 unit and component tests, lint, type checking, production build, 21 functional browser tests, one visual fixture path, and `git diff --check`. Fresh consent and acknowledged handoff frames were inspected at 1440 by 900.

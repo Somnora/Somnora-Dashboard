@@ -9,8 +9,8 @@ Signals lead to observations. Observations may become invitations. Invitations w
 ## Sequence
 
 1. **Universal Context Timeline**: completed in the guided Workbench on August 28, 2026. Dream, Daily, Eureka, sleep context, activities, Nora reasoning, and user-confirmed growth now share one source-linked chronology. The event contract includes future Fitness and Nutrition domains without presenting those adapters as active.
-2. **Generalized Nora Action Runtime**: next. Turn the current invitation handoff into a reusable action system with typed inputs, consent requirements, device routing, progress, expiry, cancellation, and outcomes.
-3. **Nora Action Desk**: show proposed, approved, active, completed, failed, and declined actions in one calm workspace. Preserve the distinction between Nora noticing, Nora suggesting, and the user authorizing.
+2. **Generalized Nora Action Runtime**: completed on August 28, 2026. Four typed action contracts now share explicit single-action consent, route validation, bounded progress, guarded lifecycle transitions, expiry, cancellation, and privacy-safe outcomes. The seeded transport runs the complete contract. The live version 1 relay remains intentionally limited to Three Beautiful Things until later device adapters are built.
+3. **Nora Action Desk**: next. Show proposed, approved, active, completed, failed, and declined actions in one calm workspace. Preserve the distinction between Nora noticing, Nora suggesting, and the user authorizing.
 4. **Consent and Autonomy Console**: provide domain-specific controls for what Nora may observe, suggest, prepare, or act on. Default consequential actions to explicit approval and keep a readable action history.
 5. **Growth Without Gamification**: help users compare then and now through user-confirmed changes, sustained boundaries, returned curiosity, and completed experiments. Do not add streak pressure, disclosure scores, emotional leaderboards, or shame.
 6. **Activity Studio**: expand consent-based interactive activities across Discover, Connect, Create, Reflect, and Reset. Support energy, time, mobility, social bandwidth, weather, privacy, and alternate versions.

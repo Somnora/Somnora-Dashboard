@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import type { PropsWithChildren } from 'react'
 import { demoProfile } from '../demo/profile'
-import type { PairingSession, WorkbenchState } from '../domain/types'
+import {
+  createActionConsentReceipt,
+  prepareNoraAction,
+} from '../domain/actionRuntime'
+import type {
+  NoraActionDispatch,
+  NoraActionSnapshot,
+  PairingSession,
+  WorkbenchState,
+} from '../domain/types'
 import { DemoTransport } from '../transport/DemoTransport'
 import { RelayTransport } from '../transport/RelayTransport'
 import type { WorkbenchTransport } from '../transport/WorkbenchTransport'
@@ -28,6 +37,59 @@ function createConfiguredTransport(): WorkbenchTransport {
 
 function newIdempotencyKey(): string {
   return crypto.randomUUID()
+}
+
+function prepareHeroAction(
+  state: WorkbenchState,
+  idempotencyKey: string,
+  consentReceiptId: string,
+  createdAt: string,
+  expiresAt = new Date(Date.parse(createdAt) + 90 * 60 * 1000).toISOString(),
+): NoraActionDispatch {
+  const consent = createActionConsentReceipt({
+    id: consentReceiptId,
+    actionType: 'three-beautiful-things',
+    invitationId: state.invitation.id,
+    approved: state.invitationDisposition === 'accepted',
+    approvedAt: createdAt,
+  })
+  return prepareNoraAction({
+    actionType: 'three-beautiful-things',
+    invitationId: state.invitation.id,
+    title: state.invitation.title,
+    prompt: state.invitation.prompt,
+    actionInput: {
+      type: 'three-beautiful-things',
+      targetCount: 3,
+      captureMode: 'photo-or-text',
+      setting: 'outdoor-or-indoor',
+    },
+    route: 'watch-via-iphone',
+    consent,
+    idempotencyKey,
+    createdAt,
+    expiresAt,
+  })
+}
+
+function restoredSnapshot(state: WorkbenchState, updatedAt: string): NoraActionSnapshot {
+  return {
+    id: state.delivery.actionId ?? '',
+    invitationId: state.invitation.id,
+    actionType: state.delivery.actionType ?? 'three-beautiful-things',
+    status: state.delivery.status === 'idle' ? 'pending' : state.delivery.status,
+    progress: {
+      kind: 'count',
+      target: state.delivery.progressTarget,
+      unit: state.delivery.progressUnit,
+      completed: state.delivery.progressCount,
+    },
+    route: state.delivery.route ?? 'watch-via-iphone',
+    simulated: true,
+    expiresAt: state.delivery.expiresAt ?? new Date(Date.parse(updatedAt) + 90 * 60 * 1000).toISOString(),
+    updatedAt,
+    outcome: state.delivery.outcome,
+  }
 }
 
 function restoreSafeState(initial: WorkbenchState): WorkbenchState {
@@ -60,13 +122,24 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
   const [connectionError, setConnectionError] = useState<string | null>(null)
   const transportRef = useRef<WorkbenchTransport>(createConfiguredTransport())
   const idempotencyKeyRef = useRef(newIdempotencyKey())
+  const consentReceiptIdRef = useRef(newIdempotencyKey())
 
   useEffect(() => {
     const transport = transportRef.current
-    const { actionId, status, progressCount } = state.delivery
+    const { actionId, status } = state.delivery
     if (!(transport instanceof DemoTransport) || !actionId || status === 'idle') return
-    transport.restoreAction(actionId, state.invitation.id, status, progressCount)
-  }, [state.delivery, state.invitation.id])
+    if (['completed', 'cancelled', 'expired'].includes(status)) return
+    const updatedAt = state.delivery.updatedAt ?? new Date().toISOString()
+    const expiry = state.delivery.expiresAt ?? new Date(Date.parse(updatedAt) + 90 * 60 * 1000).toISOString()
+    const dispatchContract = prepareHeroAction(
+      state,
+      idempotencyKeyRef.current,
+      consentReceiptIdRef.current,
+      updatedAt,
+      expiry,
+    )
+    transport.restoreAction(dispatchContract, restoredSnapshot(state, updatedAt))
+  }, [state])
 
   useEffect(() => {
     savePreferences(window.localStorage, {
@@ -84,11 +157,23 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
         progressCount: state.delivery.progressCount,
         simulated: true,
         actionId: state.delivery.actionId,
+        actionType: state.delivery.actionType,
+        route: state.delivery.route,
+        progressTarget: state.delivery.progressTarget,
+        progressUnit: state.delivery.progressUnit,
+        expiresAt: state.delivery.expiresAt,
+        updatedAt: state.delivery.updatedAt,
       },
     })
   }, [
     state.delivery.actionId,
     state.delivery.progressCount,
+    state.delivery.progressTarget,
+    state.delivery.progressUnit,
+    state.delivery.actionType,
+    state.delivery.route,
+    state.delivery.expiresAt,
+    state.delivery.updatedAt,
     state.delivery.status,
     state.invitationDisposition,
   ])
@@ -127,42 +212,17 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
       try {
         const action = await transportRef.current.getActionStatus(actionId)
         setConnectionError(null)
-        if (action.status === 'failed') {
-          dispatch({
-            type: 'delivery-error',
-            message: 'The device relay reported that this handoff failed.',
-            updatedAt: new Date().toISOString(),
-          })
-          return
-        }
-        if (transportMode === 'demo') {
-          dispatch({
-            type: 'delivery-status',
-            status: action.status,
-            updatedAt: new Date().toISOString(),
-          })
-        } else {
-          dispatch({
-            type: 'delivery-snapshot',
-            status: action.status,
-            progressCount: action.progressCount,
-            simulated: false,
-            updatedAt: new Date().toISOString(),
-          })
-        }
+        dispatch({
+          type: 'delivery-snapshot',
+          action,
+          updatedAt: action.updatedAt,
+        })
       } catch (error) {
         const message = error instanceof Error
           ? error.message
           : 'The handoff paused before the next confirmed state.'
         if (transportMode === 'relay') {
           setConnectionError(message)
-          dispatch({
-            type: 'delivery-snapshot',
-            status: state.delivery.status,
-            progressCount: state.delivery.progressCount,
-            simulated: false,
-            updatedAt: new Date().toISOString(),
-          })
         } else {
           dispatch({
             type: 'delivery-error',
@@ -191,24 +251,27 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
   }, [])
 
   const dispatchInvitation = useCallback(async () => {
-    const action = await transportRef.current.sendInvitation({
-      invitationId: state.invitation.id,
-      title: state.invitation.title,
-      prompt: state.invitation.prompt,
-      estimatedMinutes: state.invitation.estimatedMinutes,
-      idempotencyKey: idempotencyKeyRef.current,
-      version: 1,
-    })
+    const createdAt = new Date().toISOString()
+    const actionContract = prepareHeroAction(
+      state,
+      idempotencyKeyRef.current,
+      consentReceiptIdRef.current,
+      createdAt,
+    )
+    const action = await transportRef.current.sendAction(actionContract)
     dispatch({
       type: 'delivery-started',
-      actionId: action.id,
-      simulated: action.simulated,
-      updatedAt: new Date().toISOString(),
+      action,
+      updatedAt: action.updatedAt,
     })
     setConnectionError(null)
-  }, [state.invitation])
+  }, [state])
 
   const send = useCallback(async () => {
+    if (state.invitationDisposition !== 'accepted') {
+      setConnectionError('Accept this invitation before creating an action.')
+      return
+    }
     if (transportMode === 'relay' && pairing?.status !== 'paired') {
       setConnectionError('Pair this Workbench with the iPhone before sending.')
       return
@@ -218,7 +281,7 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
     } catch (error) {
       setConnectionError(error instanceof Error ? error.message : 'The invitation could not be sent.')
     }
-  }, [dispatchInvitation, pairing?.status])
+  }, [dispatchInvitation, pairing?.status, state.invitationDisposition])
 
   const retry = useCallback(async () => {
     if (transportMode === 'demo') {
@@ -228,13 +291,13 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
       const action = transport.retryAction(state.delivery.actionId)
       dispatch({
         type: 'delivery-started',
-        actionId: action.id,
-        simulated: true,
-        updatedAt: new Date().toISOString(),
+        action,
+        updatedAt: action.updatedAt,
       })
       return
     }
     idempotencyKeyRef.current = newIdempotencyKey()
+    consentReceiptIdRef.current = newIdempotencyKey()
     try {
       await dispatchInvitation()
     } catch (error) {
@@ -246,21 +309,7 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
     if (!state.delivery.actionId) return
     try {
       const action = await transportRef.current.cancelAction(state.delivery.actionId)
-      if (transportMode === 'demo') {
-        dispatch({
-          type: 'delivery-status',
-          status: action.status,
-          updatedAt: new Date().toISOString(),
-        })
-      } else {
-        dispatch({
-          type: 'delivery-snapshot',
-          status: action.status,
-          progressCount: action.progressCount,
-          simulated: false,
-          updatedAt: new Date().toISOString(),
-        })
-      }
+      dispatch({ type: 'delivery-snapshot', action, updatedAt: action.updatedAt })
       setConnectionError(null)
     } catch (error) {
       setConnectionError(error instanceof Error ? error.message : 'The handoff could not be cancelled.')
@@ -280,24 +329,20 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
     if (transportMode !== 'demo' || !state.delivery.actionId) return
     const transport = transportRef.current
     if (!(transport instanceof DemoTransport)) return
-    const nextCount = Math.min(3, state.delivery.progressCount + 1)
-    transport.recordProgress(state.delivery.actionId, nextCount)
-    dispatch({
-      type: 'delivery-progress',
-      count: nextCount,
-      updatedAt: new Date().toISOString(),
-    })
-  }, [state.delivery.actionId, state.delivery.progressCount])
+    const nextCount = Math.min(state.delivery.progressTarget, state.delivery.progressCount + 1)
+    const action = transport.recordProgress(state.delivery.actionId, nextCount)
+    dispatch({ type: 'delivery-snapshot', action, updatedAt: action.updatedAt })
+  }, [state.delivery.actionId, state.delivery.progressCount, state.delivery.progressTarget])
 
   const simulateFailure = useCallback(() => {
     if (transportMode !== 'demo' || !state.delivery.actionId) return
     const transport = transportRef.current
     if (!(transport instanceof DemoTransport)) return
-    transport.failAction(state.delivery.actionId)
+    const action = transport.failAction(state.delivery.actionId)
     dispatch({
-      type: 'delivery-error',
-      message: 'The simulated iPhone relay did not confirm the next handoff.',
-      updatedAt: new Date().toISOString(),
+      type: 'delivery-snapshot',
+      action,
+      updatedAt: action.updatedAt,
     })
   }, [state.delivery.actionId])
 
@@ -305,17 +350,18 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
     if (transportMode !== 'demo' || !state.delivery.actionId) return
     const transport = transportRef.current
     if (!(transport instanceof DemoTransport)) return
-    transport.expireAction(state.delivery.actionId)
+    const action = transport.expireAction(state.delivery.actionId)
     dispatch({
-      type: 'delivery-status',
-      status: 'expired',
-      updatedAt: new Date().toISOString(),
+      type: 'delivery-snapshot',
+      action,
+      updatedAt: action.updatedAt,
     })
   }, [state.delivery.actionId])
 
   const reset = useCallback(() => {
     if (transportMode === 'demo') transportRef.current = new DemoTransport()
     idempotencyKeyRef.current = newIdempotencyKey()
+    consentReceiptIdRef.current = newIdempotencyKey()
     dispatch({ type: 'reset-mission', simulated: transportMode === 'demo' })
   }, [])
 

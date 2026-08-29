@@ -180,7 +180,7 @@ function buildSessionEvents(
       title: state.delivery.status === 'completed'
         ? 'Activity completed'
         : 'Device handoff updated',
-      summary: `The consented activity is ${state.delivery.status}. ${state.delivery.progressCount} of 3 private field notes are recorded.`,
+      summary: `The consented action is ${state.delivery.status}. ${state.delivery.progressCount} of ${state.delivery.progressTarget} ${state.delivery.progressUnit} are confirmed.`,
       sourceLabel: state.delivery.simulated ? 'Simulated device relay' : 'Paired device relay',
       evidenceIds: [],
       tags: [state.delivery.status],

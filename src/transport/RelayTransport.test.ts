@@ -1,15 +1,35 @@
+import {
+  createActionConsentReceipt,
+  prepareNoraAction,
+} from '../domain/actionRuntime'
 import { RelayTransport } from './RelayTransport'
 
 const pairingId = '11111111-1111-4111-8111-111111111111'
 const actionId = `${pairingId}.${'a'.repeat(32)}`
-const dispatch = {
+const createdAt = '2099-08-28T18:30:00.000Z'
+const dispatch = prepareNoraAction({
+  actionType: 'three-beautiful-things',
   invitationId: 'three-beautiful-things-v1',
   title: 'Three Beautiful Things',
   prompt: 'Photograph three things that catch your eye.',
-  estimatedMinutes: 20,
+  actionInput: {
+    type: 'three-beautiful-things',
+    targetCount: 3,
+    captureMode: 'photo-or-text',
+    setting: 'outdoor-or-indoor',
+  },
+  route: 'watch-via-iphone',
+  consent: createActionConsentReceipt({
+    id: 'consent-receipt-2',
+    actionType: 'three-beautiful-things',
+    invitationId: 'three-beautiful-things-v1',
+    approved: true,
+    approvedAt: createdAt,
+  }),
   idempotencyKey: '22222222-2222-4222-8222-222222222222',
-  version: 1 as const,
-}
+  createdAt,
+  expiresAt: '2099-08-28T20:00:00.000Z',
+})
 
 function response(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -34,8 +54,8 @@ function actionEnvelope(status: string, progressCount = 0) {
       },
       status,
       progressCount,
-      createdAt: '2026-08-28T18:00:00.000Z',
-      updatedAt: '2026-08-28T18:00:00.000Z',
+      createdAt,
+      updatedAt: createdAt,
       expiresAt: '2099-08-28T20:00:00.000Z',
     },
   }
@@ -68,7 +88,7 @@ describe('RelayTransport', () => {
     const pairing = await transport.pair()
     expect(pairing.code).toBe('123456')
     expect((await transport.getPairingStatus(pairing.id)).status).toBe('paired')
-    const action = await transport.sendInvitation(dispatch)
+    const action = await transport.sendAction(dispatch)
     expect(action.simulated).toBe(false)
 
     const [, request] = fetcher.mock.calls[2]
@@ -101,7 +121,7 @@ describe('RelayTransport', () => {
 
     const progress = await transport.getActionStatus(actionId)
     expect(progress.status).toBe('in-progress')
-    expect(progress.progressCount).toBe(2)
+    expect(progress.progress.completed).toBe(2)
     await expect(transport.getActionStatus(actionId)).rejects.toThrow('unsupported action')
   })
 

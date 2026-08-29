@@ -8,6 +8,8 @@ import type { DeliveryState } from './types'
 const idle: DeliveryState = {
   status: 'idle',
   progressCount: 0,
+  progressTarget: 3,
+  progressUnit: 'discoveries',
   simulated: true,
 }
 
@@ -47,6 +49,8 @@ describe('delivery state', () => {
     const active: DeliveryState = {
       status: 'in-progress',
       progressCount: 2,
+      progressTarget: 3,
+      progressUnit: 'discoveries',
       simulated: true,
     }
     expect(() =>
@@ -58,6 +62,8 @@ describe('delivery state', () => {
     const pending: DeliveryState = {
       status: 'pending',
       progressCount: 0,
+      progressTarget: 3,
+      progressUnit: 'discoveries',
       simulated: false,
     }
     const completed = reconcileDeliverySnapshot(
@@ -75,6 +81,8 @@ describe('delivery state', () => {
     const active: DeliveryState = {
       status: 'in-progress',
       progressCount: 2,
+      progressTarget: 3,
+      progressUnit: 'discoveries',
       simulated: false,
     }
     expect(() =>
@@ -90,6 +98,6 @@ describe('delivery state', () => {
         { status: 'completed', progressCount: 2, simulated: false },
         '2026-08-28T19:00:00Z',
       ),
-    ).toThrow('Completion requires three discoveries')
+    ).toThrow('Completion requires the prepared progress target')
   })
 })

@@ -1,6 +1,6 @@
 import type {
-  InvitationAction,
-  InvitationDispatch,
+  NoraActionDispatch,
+  NoraActionSnapshot,
   PairingSession,
   PairingStatus,
 } from '../domain/types'
@@ -9,7 +9,7 @@ export interface WorkbenchTransport {
   readonly mode: 'demo' | 'relay'
   pair(): Promise<PairingSession>
   getPairingStatus(pairingId: string): Promise<PairingStatus>
-  sendInvitation(invitation: InvitationDispatch): Promise<InvitationAction>
-  getActionStatus(actionId: string): Promise<InvitationAction>
-  cancelAction(actionId: string): Promise<InvitationAction>
+  sendAction(action: NoraActionDispatch): Promise<NoraActionSnapshot>
+  getActionStatus(actionId: string): Promise<NoraActionSnapshot>
+  cancelAction(actionId: string): Promise<NoraActionSnapshot>
 }

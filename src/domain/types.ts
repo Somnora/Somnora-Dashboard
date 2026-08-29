@@ -80,6 +80,93 @@ export type DeliveryStatus =
   | 'cancelled'
   | 'expired'
 
+export type NoraActionStatus = Exclude<DeliveryStatus, 'idle'>
+
+export type NoraActionType =
+  | 'three-beautiful-things'
+  | 'breathing-reset'
+  | 'six-line-story'
+  | 'tiny-detour'
+
+export type NoraActionRoute =
+  | 'workbench-only'
+  | 'iphone'
+  | 'watch-via-iphone'
+
+export type NoraActionInput =
+  | {
+      type: 'three-beautiful-things'
+      targetCount: 3
+      captureMode: 'photo-or-text'
+      setting: 'outdoor-or-indoor'
+    }
+  | {
+      type: 'breathing-reset'
+      durationSeconds: 60 | 120 | 180
+      guidanceSurface: 'workbench' | 'iphone' | 'watch'
+    }
+  | {
+      type: 'six-line-story'
+      lineCount: 6
+      promptStyle: 'constraint'
+    }
+  | {
+      type: 'tiny-detour'
+      maximumMinutes: 5 | 10 | 15
+      locationMode: 'location-neutral' | 'nearby-with-permission'
+    }
+
+export interface NoraActionConsentReceipt {
+  id: string
+  actionType: NoraActionType
+  invitationId: string
+  decision: 'approved'
+  scope: 'single-action'
+  approvedAt: string
+  surface: 'workbench'
+}
+
+export interface NoraActionProgressContract {
+  kind: 'count' | 'duration' | 'completion'
+  target: number
+  unit: string
+}
+
+export interface NoraActionDispatch {
+  runtimeVersion: 1
+  actionType: NoraActionType
+  invitationId: string
+  title: string
+  prompt: string
+  input: NoraActionInput
+  route: NoraActionRoute
+  progress: NoraActionProgressContract
+  consent: NoraActionConsentReceipt
+  idempotencyKey: string
+  createdAt: string
+  expiresAt: string
+}
+
+export interface NoraActionOutcome {
+  kind: 'completed' | 'failed' | 'cancelled' | 'expired'
+  recordedAt: string
+  summary: string
+  memoryDisposition: 'awaiting-user-choice' | 'not-eligible'
+}
+
+export interface NoraActionSnapshot {
+  id: string
+  invitationId: string
+  actionType: NoraActionType
+  status: NoraActionStatus
+  progress: NoraActionProgressContract & { completed: number }
+  route: NoraActionRoute
+  simulated: boolean
+  expiresAt: string
+  updatedAt: string
+  outcome?: NoraActionOutcome
+}
+
 export interface DemoMetadata {
   isDemo: true
   asOfDate: string
@@ -178,24 +265,6 @@ export interface Invitation {
   requiresAcceptance: true
 }
 
-export interface InvitationDispatch {
-  invitationId: string
-  title: string
-  prompt: string
-  estimatedMinutes: number
-  idempotencyKey: string
-  version: 1
-}
-
-export interface InvitationAction {
-  id: string
-  invitationId: string
-  status: DeliveryStatus
-  progressCount: 0 | 1 | 2 | 3
-  simulated: boolean
-  expiresAt: string
-}
-
 export interface PairingSession {
   id: string
   status: 'waiting' | 'paired'
@@ -213,7 +282,13 @@ export interface PairingStatus {
 export interface DeliveryState {
   status: DeliveryStatus
   actionId?: string
-  progressCount: 0 | 1 | 2 | 3
+  actionType?: NoraActionType
+  route?: NoraActionRoute
+  progressCount: number
+  progressTarget: number
+  progressUnit: string
+  expiresAt?: string
+  outcome?: NoraActionOutcome
   errorMessage?: string
   updatedAt?: string
   simulated: boolean

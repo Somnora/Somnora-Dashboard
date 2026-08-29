@@ -23,8 +23,14 @@ describe('safe persistence', () => {
       delivery: {
         status: 'in-progress',
         progressCount: 2,
+        progressTarget: 3,
+        progressUnit: 'discoveries',
         simulated: true,
         actionId: 'demo-action-1',
+        actionType: 'three-beautiful-things',
+        route: 'watch-via-iphone',
+        expiresAt: '2026-08-28T20:30:00.000Z',
+        updatedAt: '2026-08-28T19:15:00.000Z',
       },
     })
 
@@ -33,11 +39,37 @@ describe('safe persistence', () => {
       delivery: {
         status: 'in-progress',
         progressCount: 2,
+        progressTarget: 3,
+        progressUnit: 'discoveries',
         simulated: true,
         actionId: 'demo-action-1',
+        actionType: 'three-beautiful-things',
+        route: 'watch-via-iphone',
+        expiresAt: '2026-08-28T20:30:00.000Z',
+        updatedAt: '2026-08-28T19:15:00.000Z',
       },
     })
     expect(sessionStorage).toHaveLength(1)
-    expect(sessionStorage.getItem(persistenceKeys.demoProgress)).not.toContain('text')
+    const stored = sessionStorage.getItem(persistenceKeys.demoProgress)
+    expect(stored).not.toContain('text')
+    expect(stored).not.toContain('prompt')
+    expect(stored).not.toContain('consent')
+  })
+
+  it('rejects impossible or unbounded restored progress', () => {
+    sessionStorage.setItem(persistenceKeys.demoProgress, JSON.stringify({
+      invitationAccepted: true,
+      delivery: {
+        status: 'completed',
+        progressCount: 2,
+        progressTarget: 3,
+        progressUnit: 'discoveries',
+        simulated: true,
+        actionId: '<script>',
+        updatedAt: 'not-a-date',
+      },
+    }))
+
+    expect(loadDemoProgress(sessionStorage)).toBeNull()
   })
 })
