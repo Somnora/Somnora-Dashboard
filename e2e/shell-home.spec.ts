@@ -64,6 +64,35 @@ test('home fits the two target recording sizes without horizontal clipping', asy
   }
 })
 
+test('Action Desk keeps its authority record inside both target widths', async ({ page }) => {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1280, height: 800 },
+  ]) {
+    await page.setViewportSize(viewport)
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Action Desk' }).click()
+    await expect(page.getByText('Every action has a boundary.')).toBeVisible()
+
+    const geometry = await page.evaluate(() => {
+      const workspace = document.querySelector('#main-content')?.getBoundingClientRect()
+      const layout = document.querySelector('.action-desk-layout')?.getBoundingClientRect()
+      return {
+        bodyWidth: document.body.scrollWidth,
+        viewportWidth: window.innerWidth,
+        layoutLeft: layout?.left,
+        layoutRight: layout?.right,
+        workspaceLeft: workspace?.left,
+        workspaceRight: workspace?.right,
+      }
+    })
+
+    expect(geometry.bodyWidth).toBeLessThanOrEqual(geometry.viewportWidth)
+    expect(geometry.layoutLeft).toBeGreaterThanOrEqual(geometry.workspaceLeft ?? 0)
+    expect(geometry.layoutRight).toBeLessThanOrEqual(geometry.workspaceRight ?? viewport.width)
+  }
+})
+
 test('changing destinations resets the workspace scroll position', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Analytics' }).click()

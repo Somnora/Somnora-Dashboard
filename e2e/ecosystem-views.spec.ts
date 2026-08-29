@@ -58,3 +58,44 @@ test('timeline connects ecosystem sources and keeps reasoning inspectable', asyn
   await expect(page.getByRole('heading', { name: 'Conversations' })).toBeVisible()
   await expect(page.getByRole('tab', { name: 'Dream' })).toHaveAttribute('aria-selected', 'true')
 })
+
+test('Action Desk separates Nora noticing from user authority', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Action Desk' }).click()
+
+  await expect(page.getByText('Nora can notice and suggest.')).toBeVisible()
+  await expect(page.getByText('Only you approve or decline.')).toBeVisible()
+  await expect(page.getByRole('button', { name: /Proposed.*Three Beautiful Things/ })).toBeVisible()
+  await expect(page.getByText('Waiting for you', { exact: true })).toBeVisible()
+  await expect(page.getByText('No route prepared')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Closed' }).click()
+  await expect(page.getByRole('button', { name: /Completed.*Breathing Reset/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Failed.*Tiny Detour/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Declined.*Six Line Story/ })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Needs you' }).click()
+  await page.getByRole('button', { name: /Proposed.*Three Beautiful Things/ }).click()
+  await page.getByRole('button', { name: 'Review on Home' }).click()
+  await expect(page.getByRole('button', { name: 'Accept invitation' })).toBeVisible()
+})
+
+test('Action Desk reflects approval and active runtime without granting new authority', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Accept invitation' }).click()
+  await page.getByRole('button', { name: 'Action Desk' }).click()
+
+  await expect(page.getByRole('button', { name: /Approved.*Three Beautiful Things/ })).toBeVisible()
+  await expect(page.getByText('Planned, not sent: Workbench to iPhone to Watch')).toBeVisible()
+  await expect(page.getByText('Sending remains a separate choice.')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Send to iPhone and Watch' })).not.toBeVisible()
+
+  await page.getByRole('button', { name: 'Review on Home' }).click()
+  await page.getByRole('button', { name: 'Send to iPhone and Watch' }).click()
+  await expect(page.getByRole('button', { name: 'Start activity' })).toBeVisible()
+  await page.getByRole('button', { name: 'Action Desk' }).click()
+
+  await expect(page.getByRole('button', { name: /Active.*Three Beautiful Things/ })).toBeVisible()
+  await expect(page.getByText('Workbench to iPhone to Watch')).toBeVisible()
+  await expect(page.getByText('This workspace can inspect and route you back to a decision.')).toBeVisible()
+})

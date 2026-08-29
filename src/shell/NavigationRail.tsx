@@ -3,6 +3,7 @@ import { useWorkbench } from '../state/workbenchContext'
 
 const destinations: Array<{ id: Destination; label: string; mark: string }> = [
   { id: 'home', label: 'Home', mark: 'H' },
+  { id: 'action-desk', label: 'Action Desk', mark: 'D' },
   { id: 'conversations', label: 'Conversations', mark: 'C' },
   { id: 'timeline', label: 'Timeline', mark: 'L' },
   { id: 'about-me', label: 'About Me', mark: 'M' },

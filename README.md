@@ -20,13 +20,16 @@ Recommended demo path:
 1. On Home, open **Why this** to reveal the evidence path in About Me.
 2. Return Home, accept **Three Beautiful Things**, then explicitly send the invitation.
 3. Start the simulated activity and add the three privacy-safe demo photographs.
-4. Open Conversations, Themes, and Analytics to show the wider ecosystem.
-5. Return Home and open the private burn exercise as the final visual beat.
+4. Open Action Desk to show the difference between what Nora noticed, what she proposed, and what you authorized.
+5. Open Timeline, Conversations, Themes, and Analytics to show the wider ecosystem.
+6. Return Home and open the private burn exercise as the final visual beat.
 
 ## What is working in this repository
 
 - A deterministic, privacy-safe 30-day profile for Dream, Daily, Eureka, themes, biometrics, and About Me.
 - A bounded, inspectable memory graph with confirmation, correction, and forgetting controls.
+- A universal Context Timeline and a calm Action Desk that make source provenance, consent, route, progress, outcome, and memory boundaries inspectable.
+- A generalized Nora action runtime with typed contracts for Three Beautiful Things, Breathing Reset, Six Line Story, and Tiny Detour. Only Three Beautiful Things currently has a live relay adapter.
 - A complete offline `DemoTransport` state machine labeled as simulated, including consent, iPhone delivery, Watch delivery, acknowledgement, progress, failure, retry, cancellation, expiry, and refresh recovery.
 - A private Field Note using bundled demo assets. Photo bytes are not transferred.
 - A private burn exercise whose text remains in component memory and is cleared before animation, with a reduced-motion alternative.

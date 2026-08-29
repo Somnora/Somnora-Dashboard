@@ -305,3 +305,18 @@
 - Extended safe session recovery with bounded status metadata only. Prompts, consent receipts, private writing, photos, health data, and memory evidence remain outside browser storage.
 - Added `docs/action-runtime.md` as the implementation and trust-boundary reference.
 - Verified 45 unit and component tests, lint, type checking, production build, 21 functional browser tests, one visual fixture path, and `git diff --check`. Fresh consent and acknowledged handoff frames were inspected at 1440 by 900.
+
+## 2026-08-28 - Ecosystem expansion step 3
+
+### Nora Action Desk
+
+- Added Action Desk as a primary Workbench destination while preserving Home as Nora's focused current judgment.
+- Added a typed, pure selector that turns the current invitation and action runtime into one inspectable record without creating a second execution state machine.
+- Separated Noticed, Proposed, Approved, Active, Completed, Failed, Declined, and Stopped language so user intent, device confirmation, and Nora observation cannot collapse into one ambiguous status.
+- Added privacy-safe seeded history for completed Breathing Reset, failed Tiny Detour, and declined Six Line Story examples. These records are visibly labeled seeded and are not presented as synchronized production history.
+- Added filters for all records, actions needing the user, active actions, closed actions, and noticed signals.
+- Added an inspector for authority, consent, route, progress, source, memory, and privacy boundaries.
+- Current records can route to supporting About Me context or back to Home. The Desk cannot start, send, schedule, message, or write an outcome to memory.
+- Added `docs/action-desk.md` as the product and trust-boundary reference.
+- Browser QA caught a shared Field Note focus-scroll issue after the longer navigation sequence. Changing the decorative card crop from a hidden scroll container to a clipped container removed the nested horizontal scroll path and restored the complete Field Note frame.
+- Verified 49 unit and component tests, lint, type checking, production build, 24 functional browser tests, and one visual fixture path. Fresh Action Desk and completed Field Note frames were inspected at 1440 by 900.

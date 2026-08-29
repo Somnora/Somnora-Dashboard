@@ -22,6 +22,9 @@ test('primary destinations remain free of browser console warnings and errors', 
   page.on('pageerror', (error) => problems.push(`pageerror: ${error.message}`))
 
   await page.goto('/')
+  await page.getByRole('button', { name: 'Action Desk' }).click()
+  await expect(page.getByRole('heading', { name: 'Action Desk' })).toBeVisible()
+  await expect(page.getByText('Every action has a boundary.')).toBeVisible()
   await page.getByRole('button', { name: 'Conversations' }).click()
   await expect(page.getByRole('tab', { name: 'Dream' })).toBeVisible()
   await page.getByRole('button', { name: 'Timeline' }).click()

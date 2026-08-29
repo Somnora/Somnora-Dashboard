@@ -1,5 +1,6 @@
 export type Destination =
   | 'home'
+  | 'action-desk'
   | 'conversations'
   | 'timeline'
   | 'about-me'

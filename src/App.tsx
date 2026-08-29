@@ -9,6 +9,11 @@ const ConversationsView = lazy(() =>
     default: module.ConversationsView,
   })),
 )
+const ActionDeskView = lazy(() =>
+  import('./features/actions/ActionDeskView').then((module) => ({
+    default: module.ActionDeskView,
+  })),
+)
 const AboutMeView = lazy(() =>
   import('./features/memory/AboutMeView').then((module) => ({
     default: module.AboutMeView,
@@ -45,6 +50,8 @@ function ActiveDestination() {
   switch (state.destination) {
     case 'home':
       return <HomeView />
+    case 'action-desk':
+      return <ActionDeskView />
     case 'about-me':
       return <AboutMeView />
     case 'conversations':

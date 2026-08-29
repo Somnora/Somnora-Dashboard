@@ -50,6 +50,8 @@ The wider dashboard shows how Somnora can become an ecosystem rather than a coll
 - Three Beautiful Things dry-spell hero loop
 - Explainable About Me graph and memory correction controls
 - Seeded Dream, Daily, Eureka, Themes, and Analytics workspaces
+- Universal Context Timeline and consent-inspectable Nora Action Desk
+- Generalized Nora action runtime with typed consent, route, progress, expiry, and outcome contracts
 - Private burn exercise and proactive activity library previews
 - Deterministic cross-device demo transport and private Field Note
 - Authenticated Workbench relay with role isolation, expiry, idempotency, rate limits, and safe logs
@@ -76,7 +78,8 @@ The Workbench reuses approved visual assets and extends existing device boundari
 6. Cut briefly to the real watchOS simulator frame showing the new Nora invitation and Start control.
 7. Complete the three discoveries in the deterministic path and reveal the private Field Note.
 8. Show Conversations, Themes, and Analytics quickly to establish the wider ecosystem.
-9. End with either the private burn interaction or the activity library to show that Nora can propose interactive exercises beyond chat.
+9. Open Action Desk and show the separation between what Nora noticed, what she proposed, and what the user authorized.
+10. End with either the private burn interaction or the activity library to show that Nora can propose interactive exercises beyond chat.
 
 ## Screenshot and capture inventory
 
@@ -88,6 +91,7 @@ The Workbench reuses approved visual assets and extends existing device boundari
 - `screenshots/local/field-note-1440.png`
 - `screenshots/local/burn-animation-1440.png`
 - `screenshots/local/activity-library-1440.png`
+- `screenshots/local/action-desk-1440.png`
 
 ### New Apple Watch frame
 
@@ -108,11 +112,11 @@ The fresh iPhone CI launch with a placeholder Firebase configuration did not pro
 
 - TypeScript type check passed.
 - ESLint passed.
-- 31 Vitest unit and component tests passed.
+- 49 Vitest unit and component tests passed.
 - Production build passed.
-- 20 Playwright functional browser tests passed.
+- 24 Playwright functional browser tests passed.
 - One Playwright visual fixture suite passed and regenerated all target frames.
-- Home, focused About Me, acknowledged delivery, and completed Field Note frames were visually inspected at the final code state.
+- Home, focused About Me, acknowledged delivery, completed Field Note, and Action Desk frames were visually inspected at the final code state.
 
 ### Backend relay
 

@@ -43,6 +43,10 @@ test('@visual capture the recordable dashboard fixtures', async ({ page }) => {
   await expect(page.getByText('Your days make more sense together.')).toBeVisible()
   await capture(page, 'timeline-1440')
 
+  await page.getByRole('button', { name: 'Action Desk' }).click()
+  await expect(page.getByText('Every action has a boundary.')).toBeVisible()
+  await capture(page, 'action-desk-1440')
+
   await page.getByRole('button', { name: 'Analytics' }).click()
   await expect(page.getByText('This is context, not a health score.')).toBeVisible()
   await capture(page, 'analytics-1440')
@@ -78,6 +82,7 @@ test('@visual capture the recordable dashboard fixtures', async ({ page }) => {
     return {
       headingLeft: headingBounds?.left,
       headingTop: headingBounds?.top,
+      cardScrollLeft: document.querySelector<HTMLElement>('.invitation-card')?.scrollLeft,
       scrollLeft: workspace?.scrollLeft,
       scrollTop: workspace?.scrollTop,
       windowX: window.scrollX,
@@ -87,6 +92,7 @@ test('@visual capture the recordable dashboard fixtures', async ({ page }) => {
     }
   })
   expect(fieldNoteGeometry.scrollLeft).toBe(0)
+  expect(fieldNoteGeometry.cardScrollLeft).toBe(0)
   expect(fieldNoteGeometry.scrollTop).toBe(0)
   expect(fieldNoteGeometry.windowX).toBe(0)
   expect(fieldNoteGeometry.windowY).toBe(0)
