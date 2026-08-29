@@ -6,6 +6,7 @@ export type Destination =
   | 'timeline'
   | 'about-me'
   | 'growth'
+  | 'activities'
   | 'themes'
   | 'analytics'
 

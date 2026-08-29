@@ -44,6 +44,36 @@ test('Growth compares source-backed change without gamification', async ({ page 
   await expect(page.getByRole('tab', { name: 'Eureka' })).toHaveAttribute('aria-selected', 'true')
 })
 
+test('Activity Studio adapts a private exercise without starting it automatically', async ({ page }) => {
+  const privateLine = 'A red umbrella waited beneath the streetlight.'
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Activity Studio', exact: true }).click()
+
+  await page.getByLabel('Time').selectOption('5')
+  await page.getByLabel('Energy').selectOption('low')
+  await page.getByLabel('Movement').selectOption('stationary')
+  await expect(page.getByRole('heading', { name: 'One breath lines' })).toBeVisible()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Begin Six Line Story' }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+  for (let index = 1; index <= 6; index += 1) {
+    await dialog.getByLabel(`Line ${index}`).fill(index === 1 ? privateLine : `Private line ${index}`)
+  }
+  await dialog.getByRole('button', { name: 'Complete private story' }).click()
+  await expect(dialog.getByText(privateLine)).toBeVisible()
+
+  const storage = await page.evaluate(() => ({
+    local: JSON.stringify(localStorage),
+    session: JSON.stringify(sessionStorage),
+  }))
+  expect(storage.local).not.toContain(privateLine)
+  expect(storage.session).not.toContain(privateLine)
+  await dialog.getByRole('button', { name: 'Finish and clear' }).click()
+  await expect(dialog).not.toBeVisible()
+})
+
 test('analytics exposes units and a seeded-data boundary', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Analytics' }).click()

@@ -38,13 +38,17 @@ test('reduced motion uses a quiet dissolve with no flame or particles', async ({
   await expect(page.getByRole('heading', { name: 'The original words are gone.' })).toBeVisible()
 })
 
-test('activity library labels continuity and preview-only ideas honestly', async ({ page }) => {
+test('Activity Studio labels continuity and preview-only ideas honestly', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'Preview more activities' }).click()
+  await page.getByRole('button', { name: 'Activity Studio', exact: true }).click()
 
-  await expect(page.getByText('Reset · Existing Somnora continuity')).toBeVisible()
-  await expect(page.getByText(/Not new hackathon work/)).toBeVisible()
-  await expect(page.getByText('Color Hunt')).toBeVisible()
-  await expect(page.getByText(/No start control is available/).first()).toBeVisible()
+  await page.getByRole('button', { name: 'Reset', exact: true }).click()
+  await page.getByRole('button', { name: /Breathing Reset/ }).click()
+  await expect(page.getByText('Pre-existing Somnora continuity')).toBeVisible()
+  await expect(page.getByText(/does not claim a live launch bridge/)).toBeVisible()
+  await page.getByRole('button', { name: 'Discover', exact: true }).click()
+  await page.getByRole('button', { name: /Color Hunt/ }).click()
+  await expect(page.getByText('Concept preview')).toBeVisible()
+  await expect(page.getByText(/not interactive yet/)).toBeVisible()
   await expect(page.getByRole('button', { name: /Start Color Hunt/ })).toHaveCount(0)
 })

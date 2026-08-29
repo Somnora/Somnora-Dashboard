@@ -16,6 +16,7 @@ const destinationCopy: Record<
   timeline: { eyebrow: 'Across your ecosystem', title: 'Context Timeline', background: 'mindful' },
   'about-me': { eyebrow: 'Inspectable memory', title: 'About Me', background: 'eureka' },
   growth: { eyebrow: 'Then and now', title: 'Growth', background: 'mindful' },
+  activities: { eyebrow: 'Actions that fit', title: 'Activity Studio', background: 'eureka' },
   themes: { eyebrow: 'Patterns across time', title: 'Themes', background: 'mindful' },
   analytics: { eyebrow: 'Body and rest', title: 'Analytics', background: 'insights' },
 }

@@ -163,6 +163,38 @@ test('Growth keeps its comparison inside both target widths', async ({ page }) =
   }
 })
 
+test('Activity Studio keeps its catalog and navigation inside both target sizes', async ({ page }) => {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1280, height: 800 },
+  ]) {
+    await page.setViewportSize(viewport)
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Activity Studio', exact: true }).click()
+    await expect(page.getByText('Find an action that fits the person you are today.')).toBeVisible()
+
+    const geometry = await page.evaluate(() => {
+      const workspace = document.querySelector('#main-content')?.getBoundingClientRect()
+      const layout = document.querySelector('.studio-layout')?.getBoundingClientRect()
+      const profile = document.querySelector('.nav-profile')?.getBoundingClientRect()
+      return {
+        bodyWidth: document.body.scrollWidth,
+        layoutLeft: layout?.left,
+        layoutRight: layout?.right,
+        profileBottom: profile?.bottom,
+        viewportWidth: window.innerWidth,
+        workspaceLeft: workspace?.left,
+        workspaceRight: workspace?.right,
+      }
+    })
+
+    expect(geometry.bodyWidth).toBeLessThanOrEqual(geometry.viewportWidth)
+    expect(geometry.layoutLeft).toBeGreaterThanOrEqual(geometry.workspaceLeft ?? 0)
+    expect(geometry.layoutRight).toBeLessThanOrEqual(geometry.workspaceRight ?? viewport.width)
+    expect(geometry.profileBottom).toBeLessThanOrEqual(viewport.height)
+  }
+})
+
 test('changing destinations resets the workspace scroll position', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Analytics' }).click()

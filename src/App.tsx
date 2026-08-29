@@ -34,6 +34,11 @@ const GrowthView = lazy(() =>
     default: module.GrowthView,
   })),
 )
+const ActivityStudioView = lazy(() =>
+  import('./features/activities/ActivityStudioView').then((module) => ({
+    default: module.ActivityStudioView,
+  })),
+)
 const AnalyticsView = lazy(() =>
   import('./features/analytics/AnalyticsView').then((module) => ({
     default: module.AnalyticsView,
@@ -74,6 +79,8 @@ function ActiveDestination() {
       return <ThemesView />
     case 'growth':
       return <GrowthView />
+    case 'activities':
+      return <ActivityStudioView />
     case 'analytics':
       return <AnalyticsView />
   }

@@ -9,6 +9,7 @@ const destinations: Array<{ id: Destination; label: string; mark: string }> = [
   { id: 'timeline', label: 'Timeline', mark: 'L' },
   { id: 'about-me', label: 'About Me', mark: 'M' },
   { id: 'growth', label: 'Growth', mark: 'G' },
+  { id: 'activities', label: 'Activity Studio', mark: 'S' },
   { id: 'themes', label: 'Themes', mark: 'T' },
   { id: 'analytics', label: 'Analytics', mark: 'A' },
 ]

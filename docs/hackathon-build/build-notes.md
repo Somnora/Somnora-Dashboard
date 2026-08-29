@@ -351,3 +351,16 @@
 - Removed the earlier static growth card from Themes so recurring motifs and personal change remain distinct workspaces.
 - Added `docs/growth-without-gamification.md` as the product, evidence, and privacy reference.
 - Verified 64 unit and component tests, lint, type checking, production build, 29 functional browser tests, and one visual fixture path. Fresh Growth frames were inspected at 1440 by 900 and 1280 by 800, including the Needs nuance state.
+
+## 2026-08-28 - Ecosystem expansion step 6
+
+### Activity Studio
+
+- Replaced the small Home preview library with Activity Studio as a primary Workbench destination across Discover, Connect, Create, Reflect, and Reset.
+- Added a typed activity catalog and deterministic fit matcher for time, energy, movement, social bandwidth, seeded weather, privacy, and alternate versions.
+- Kept browsing separate from consent. No activity starts when the user opens the Studio, changes a filter, selects a card, or reviews an alternate version.
+- Added honest availability states. Six Line Story and Private Release are interactive in the Workbench, Three Beautiful Things returns to the consent-based Home flow, Breathing Reset is labeled pre-existing Somnora continuity, and concept-only ideas have no start control.
+- Added a private Six Line Story exercise with six bounded lines, no scoring or Nora judgment, no storage or relay writes, and clear-on-close behavior.
+- Kept the existing private burn exercise available from both Home and Activity Studio without changing its text-clearing boundary or reduced-motion path.
+- Added `docs/activity-studio.md` as the product, matching, consent, and privacy reference.
+- Verified 70 unit and component tests, lint, type checking, production build, 31 functional browser tests, and one visual fixture path. Fresh Activity Studio frames were inspected at 1440 by 900 and 1280 by 800, plus the Six Line Story modal at 1440 by 900.

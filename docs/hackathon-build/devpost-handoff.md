@@ -54,7 +54,8 @@ The wider dashboard shows how Somnora can become an ecosystem rather than a coll
 - Consent and Autonomy Console with enforced domain permission boundaries
 - Growth workspace with source-linked then and now comparisons and user-owned review
 - Generalized Nora action runtime with typed consent, route, progress, expiry, and outcome contracts
-- Private burn exercise and proactive activity library previews
+- Capacity-aware Activity Studio with honest interactive, continuity, and concept states
+- Private Six Line Story and burn exercises with temporary text boundaries
 - Deterministic cross-device demo transport and private Field Note
 - Authenticated Workbench relay with role isolation, expiry, idempotency, rate limits, and safe logs
 - iPhone pairing, relay polling, compact mission state, and Watch bridge
@@ -83,7 +84,9 @@ The Workbench reuses approved visual assets and extends existing device boundari
 9. Show Conversations, Themes, and Analytics quickly to establish the wider ecosystem.
 10. Open Consent Console and show that each domain has a maximum Observe, Suggest, or Prepare boundary while consequential actions stay Ask every time.
 11. Open Action Desk and show the separation between what Nora noticed, what she proposed, and what the user authorized.
-12. End with either the private burn interaction or the activity library to show that Nora can propose interactive exercises beyond chat.
+12. Open Activity Studio and reduce available time and energy so Nora adapts Six Line Story to One breath lines.
+13. Begin the private exercise, point out that it starts only after the click and stores no lines, then close and clear it.
+14. End with the private burn interaction as the final visual beat.
 
 ## Screenshot and capture inventory
 
@@ -94,7 +97,9 @@ The Workbench reuses approved visual assets and extends existing device boundari
 - `screenshots/local/hero-acknowledged-1440.png`
 - `screenshots/local/field-note-1440.png`
 - `screenshots/local/burn-animation-1440.png`
-- `screenshots/local/activity-library-1440.png`
+- `screenshots/local/activity-studio-1440.png`
+- `screenshots/local/activity-studio-1280.png`
+- `screenshots/local/six-line-story-1440.png`
 - `screenshots/local/action-desk-1440.png`
 - `screenshots/local/consent-console-1440.png`
 - `screenshots/local/consent-console-1280.png`
@@ -121,11 +126,11 @@ The fresh iPhone CI launch with a placeholder Firebase configuration did not pro
 
 - TypeScript type check passed.
 - ESLint passed.
-- 64 Vitest unit and component tests passed.
+- 70 Vitest unit and component tests passed.
 - Production build passed.
-- 29 Playwright functional browser tests passed.
+- 31 Playwright functional browser tests passed.
 - One Playwright visual fixture suite passed and regenerated all target frames.
-- Home, focused About Me, acknowledged delivery, completed Field Note, Action Desk, and Consent Console frames were visually inspected at the final code state.
+- Home, focused About Me, acknowledged delivery, completed Field Note, Action Desk, Consent Console, Activity Studio, and Six Line Story frames were visually inspected at the final code state.
 
 ### Backend relay
 

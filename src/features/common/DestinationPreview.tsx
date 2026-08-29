@@ -24,6 +24,12 @@ const copy: Record<
     body: 'Sustained boundaries, returned curiosity, and chosen experiments stay connected to their sources and your confirmation.',
     detail: 'Growth remains a user-owned story, never a rank or disclosure target.',
   },
+  activities: {
+    label: 'Discover, Connect, Create, Reflect, Reset',
+    title: 'Actions shaped around actual capacity.',
+    body: 'Time, energy, movement, social bandwidth, weather, and privacy determine which version Nora can offer.',
+    detail: 'Browsing never starts an activity or grants Nora new authority.',
+  },
   themes: {
     label: 'Recurring context',
     title: 'Patterns without turning you into a score.',

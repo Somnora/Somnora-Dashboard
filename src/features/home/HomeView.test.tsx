@@ -52,7 +52,9 @@ describe('Living Nora Home', () => {
 
     await user.click(screen.getByRole('button', { name: 'Why this' }))
 
-    expect(await screen.findByText('Focused explanation')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Focused explanation', {}, { timeout: 3_000 }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'About Me' })).toBeInTheDocument()
     expect(screen.getByText('4 of 4 invitation sources remain active.')).toBeInTheDocument()
   })

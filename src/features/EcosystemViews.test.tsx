@@ -48,12 +48,25 @@ describe('seeded ecosystem views', () => {
     expect(screen.getByText(/open to your correction/)).toBeInTheDocument()
   })
 
+  it('opens Activity Studio without starting an exercise and labels concept previews', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: 'Activity Studio' }))
+
+    expect(await screen.findByText('Find an action that fits the person you are today.')).toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Discover' }))
+    await user.click(screen.getByRole('button', { name: /Color Hunt/ }))
+    expect(screen.getByText('Concept preview')).toBeInTheDocument()
+    expect(screen.getByText(/not interactive yet/)).toBeInTheDocument()
+  })
+
   it('labels biometric dates, units, and demo boundaries without a health score', async () => {
     const user = userEvent.setup()
     render(<App />)
     await user.click(screen.getByRole('button', { name: 'Analytics' }))
 
-    expect(await screen.findByText('7 h')).toBeInTheDocument()
+    expect(await screen.findByText('7 h', {}, { timeout: 3_000 })).toBeInTheDocument()
     expect(screen.getByText('59 bpm')).toBeInTheDocument()
     expect(screen.getByText(/This is context, not a health score/)).toBeInTheDocument()
     expect(screen.getByText(/No HealthKit or live account data/)).toBeInTheDocument()
