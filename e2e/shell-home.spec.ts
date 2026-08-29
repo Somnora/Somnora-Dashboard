@@ -93,6 +93,38 @@ test('Action Desk keeps its authority record inside both target widths', async (
   }
 })
 
+test('Consent Console keeps every authority control inside both target widths', async ({ page }) => {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1280, height: 800 },
+  ]) {
+    await page.setViewportSize(viewport)
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Consent', exact: true }).click()
+    await expect(page.getByText('Nora can be proactive without being in charge.')).toBeVisible()
+
+    const geometry = await page.evaluate(() => {
+      const workspace = document.querySelector('#main-content')?.getBoundingClientRect()
+      const layout = document.querySelector('.consent-console-layout')?.getBoundingClientRect()
+      const rows = Array.from(document.querySelectorAll('.consent-domain-row'))
+      return {
+        bodyWidth: document.body.scrollWidth,
+        viewportWidth: window.innerWidth,
+        layoutLeft: layout?.left,
+        layoutRight: layout?.right,
+        rowOverflow: rows.some((row) => row.scrollWidth > row.clientWidth),
+        workspaceLeft: workspace?.left,
+        workspaceRight: workspace?.right,
+      }
+    })
+
+    expect(geometry.bodyWidth).toBeLessThanOrEqual(geometry.viewportWidth)
+    expect(geometry.rowOverflow).toBe(false)
+    expect(geometry.layoutLeft).toBeGreaterThanOrEqual(geometry.workspaceLeft ?? 0)
+    expect(geometry.layoutRight).toBeLessThanOrEqual(geometry.workspaceRight ?? viewport.width)
+  }
+})
+
 test('changing destinations resets the workspace scroll position', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Analytics' }).click()

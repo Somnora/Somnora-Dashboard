@@ -3,7 +3,7 @@ import { useWorkbench } from '../../state/workbenchContext'
 import { GlassPanel } from './GlassPanel'
 
 const copy: Record<
-  Exclude<Destination, 'home' | 'about-me' | 'action-desk'>,
+  Exclude<Destination, 'home' | 'about-me' | 'action-desk' | 'consent'>,
   { label: string; title: string; body: string; detail: string }
 > = {
   conversations: {
@@ -32,7 +32,7 @@ const copy: Record<
   },
 }
 
-export function DestinationPreview({ destination }: { destination: Exclude<Destination, 'home' | 'about-me' | 'action-desk'> }) {
+export function DestinationPreview({ destination }: { destination: Exclude<Destination, 'home' | 'about-me' | 'action-desk' | 'consent'> }) {
   const item = copy[destination]
 
   return (

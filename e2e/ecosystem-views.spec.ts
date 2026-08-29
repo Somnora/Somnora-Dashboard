@@ -99,3 +99,49 @@ test('Action Desk reflects approval and active runtime without granting new auth
   await expect(page.getByText('Workbench to iPhone to Watch')).toBeVisible()
   await expect(page.getByText('This workspace can inspect and route you back to a decision.')).toBeVisible()
 })
+
+test('Consent Console separates suggestion access from preparation authority', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Consent', exact: true }).click()
+
+  await expect(page.getByText('Nora can be proactive without being in charge.')).toBeVisible()
+  await expect(page.getByText('Consequential actions')).toBeVisible()
+  await expect(page.getByText('Ask every time').first()).toBeVisible()
+
+  const eureka = page.getByRole('group', { name: 'Eureka ideas maximum access' })
+  await expect(eureka.getByRole('button', { name: 'Prepare' })).toHaveAttribute('aria-pressed', 'true')
+  await eureka.getByRole('button', { name: 'Observe' }).click()
+  await page.getByRole('button', { name: 'Home', exact: true }).click()
+  await expect(page.getByText('Held by your consent settings')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Accept invitation' })).not.toBeVisible()
+
+  await page.getByRole('button', { name: 'Consent', exact: true }).click()
+  await eureka.getByRole('button', { name: 'Prepare' }).click()
+  const activity = page.getByRole('group', { name: 'Activity and location maximum access' })
+  await activity.getByRole('button', { name: 'Suggest' }).click()
+  await page.getByRole('button', { name: 'Home', exact: true }).click()
+  await page.getByRole('button', { name: 'Accept invitation' }).click()
+
+  await expect(page.getByText('Preparation held')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Send to iPhone and Watch' })).not.toBeVisible()
+  await page.getByRole('button', { name: 'Review consent settings' }).click()
+  await activity.getByRole('button', { name: 'Prepare' }).click()
+  await page.getByRole('button', { name: 'Home', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Send to iPhone and Watch' })).toBeVisible()
+})
+
+test('Consent Console labels future adapters without granting unavailable access', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Consent', exact: true }).click()
+
+  const nutrition = page.getByRole('group', { name: 'Somnora Nutrition maximum access' })
+  await expect(nutrition.getByRole('button', { name: 'Off' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(nutrition.getByRole('button', { name: 'Observe' })).toBeDisabled()
+  await expect(nutrition.getByRole('button', { name: 'Suggest' })).toBeDisabled()
+  await expect(nutrition.getByRole('button', { name: 'Prepare' })).toBeDisabled()
+
+  await page.getByRole('button', { name: /Somnora Nutrition.*Future adapter/ }).click()
+  await expect(page.getByRole('heading', { name: 'Somnora Nutrition' })).toBeVisible()
+  await expect(page.getByText('No connector', { exact: true })).toBeVisible()
+  await expect(page.getByText(/No Nutrition connector or live Nutrition data/)).toBeVisible()
+})

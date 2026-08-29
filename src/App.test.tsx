@@ -22,6 +22,12 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
 
+    await user.click(screen.getByRole('button', { name: 'Action Desk' }))
+    expect(await screen.findByRole('heading', { name: 'Action Desk' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Consent' }))
+    expect(await screen.findByRole('heading', { name: 'Consent Console' })).toBeInTheDocument()
+
     await user.click(screen.getByRole('button', { name: 'Conversations' }))
     expect(await screen.findByRole('heading', { name: 'Conversations' })).toBeInTheDocument()
 

@@ -14,6 +14,11 @@ const ActionDeskView = lazy(() =>
     default: module.ActionDeskView,
   })),
 )
+const ConsentConsoleView = lazy(() =>
+  import('./features/consent/ConsentConsoleView').then((module) => ({
+    default: module.ConsentConsoleView,
+  })),
+)
 const AboutMeView = lazy(() =>
   import('./features/memory/AboutMeView').then((module) => ({
     default: module.AboutMeView,
@@ -52,6 +57,8 @@ function ActiveDestination() {
       return <HomeView />
     case 'action-desk':
       return <ActionDeskView />
+    case 'consent':
+      return <ConsentConsoleView />
     case 'about-me':
       return <AboutMeView />
     case 'conversations':

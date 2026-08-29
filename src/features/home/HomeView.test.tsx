@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { App } from '../../App'
 
@@ -55,5 +55,20 @@ describe('Living Nora Home', () => {
     expect(await screen.findByText('Focused explanation')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'About Me' })).toBeInTheDocument()
     expect(screen.getByText('4 of 4 invitation sources remain active.')).toBeInTheDocument()
+  })
+
+  it('holds the invitation when Eureka is observation only', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: 'Consent' }))
+    const eurekaControls = await screen.findByRole('group', {
+      name: 'Eureka ideas maximum access',
+    })
+    await user.click(within(eurekaControls).getByRole('button', { name: 'Observe' }))
+    await user.click(screen.getByRole('button', { name: 'Home' }))
+
+    expect(screen.getByText('Held by your consent settings')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Accept invitation' })).not.toBeInTheDocument()
   })
 })

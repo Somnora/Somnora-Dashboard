@@ -1,4 +1,5 @@
 import type { DeliveryStatus } from '../../domain/types'
+import { evaluateHeroConsent } from '../../domain/consentPolicy'
 import { useWorkbench } from '../../state/workbenchContext'
 import { ErrorState } from '../common/ErrorState'
 import { GlassPanel } from '../common/GlassPanel'
@@ -67,8 +68,9 @@ function DemoQaControls() {
 }
 
 export function InvitationWorkspace() {
-  const { connection, state, mission } = useWorkbench()
+  const { connection, state, dispatch, mission } = useWorkbench()
   const { delivery, invitation } = state
+  const heroConsent = evaluateHeroConsent(state.consentPolicies)
 
   if (delivery.status === 'completed') {
     return (
@@ -84,7 +86,17 @@ export function InvitationWorkspace() {
         <ErrorState
           actions={
             <>
-              <button className="primary-button" onClick={mission.retry} type="button">Retry handoff</button>
+              {heroConsent.canPrepare ? (
+                <button className="primary-button" onClick={mission.retry} type="button">Retry handoff</button>
+              ) : (
+                <button
+                  className="secondary-button"
+                  onClick={() => dispatch({ type: 'navigate', destination: 'consent' })}
+                  type="button"
+                >
+                  Review consent settings
+                </button>
+              )}
               <button className="text-button" onClick={() => void mission.cancel()} type="button">Cancel</button>
             </>
           }
@@ -127,7 +139,22 @@ export function InvitationWorkspace() {
           </div>
         </div>
         <ActionRuntimeSummary delivery={delivery} />
-        {relayWaiting ? (
+        {!heroConsent.canPrepare ? (
+          <div className="preparation-held-card" role="status">
+            <div>
+              <p className="eyebrow">Preparation held</p>
+              <strong>No action can be prepared under the current boundary.</strong>
+              <small>{heroConsent.preparationBoundary}</small>
+            </div>
+            <button
+              className="secondary-button"
+              onClick={() => dispatch({ type: 'navigate', destination: 'consent' })}
+              type="button"
+            >
+              Review consent settings
+            </button>
+          </div>
+        ) : relayWaiting ? (
           <div className="relay-pairing-card">
             <div>
               <p className="eyebrow">Secure device pairing</p>

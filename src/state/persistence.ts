@@ -1,8 +1,15 @@
 import type {
   AutonomyLevel,
+  ConsentCapability,
+  ConsentPolicies,
   DeliveryState,
   StretchLevel,
 } from '../domain/types'
+import {
+  consentDomains,
+  createDefaultConsentPolicies,
+  updateConsentPolicy,
+} from '../domain/consentPolicy'
 
 const PREFERENCE_KEY = 'somnora-workbench-preferences-v1'
 const DEMO_PROGRESS_KEY = 'somnora-workbench-demo-progress-v1'
@@ -10,6 +17,7 @@ const DEMO_PROGRESS_KEY = 'somnora-workbench-demo-progress-v1'
 interface SafePreferences {
   autonomy: AutonomyLevel
   stretch: StretchLevel
+  consentPolicies: ConsentPolicies
 }
 
 interface SafeDemoProgress {
@@ -31,6 +39,7 @@ interface SafeDemoProgress {
 
 const autonomyValues: AutonomyLevel[] = ['quiet', 'balanced', 'active']
 const stretchValues: StretchLevel[] = ['gentle', 'open', 'bold']
+const consentCapabilityValues: ConsentCapability[] = ['off', 'observe', 'suggest', 'prepare']
 const deliveryStatuses: DeliveryState['status'][] = [
   'idle', 'pending', 'delivered-phone', 'delivered-watch', 'acknowledged',
   'in-progress', 'completed', 'failed', 'cancelled', 'expired',
@@ -67,9 +76,25 @@ export function loadPreferences(storage: Storage): SafePreferences | null {
     ) {
       return null
     }
+    const storedPolicies = record.consentPolicies
+    let consentPolicies = createDefaultConsentPolicies()
+    if (storedPolicies && typeof storedPolicies === 'object') {
+      for (const definition of consentDomains) {
+        const value = (storedPolicies as Record<string, unknown>)[definition.id]
+        if (!consentCapabilityValues.includes(value as ConsentCapability)) return null
+        const updated = updateConsentPolicy(
+          consentPolicies,
+          definition.id,
+          value as ConsentCapability,
+        )
+        if (updated === consentPolicies && value !== consentPolicies[definition.id]) return null
+        consentPolicies = updated
+      }
+    }
     return {
       autonomy: record.autonomy as AutonomyLevel,
       stretch: record.stretch as StretchLevel,
+      consentPolicies,
     }
   } catch {
     return null

@@ -4,9 +4,12 @@ import { AutonomyControl } from './AutonomyControl'
 import { InvitationCard } from './InvitationCard'
 import { StretchLevelControl } from './StretchLevelControl'
 import { ActivityShelf } from '../reflect/ActivityShelf'
+import { evaluateHeroConsent } from '../../domain/consentPolicy'
 
 export function HomeView() {
-  const { state } = useWorkbench()
+  const { state, dispatch } = useWorkbench()
+  const heroConsent = evaluateHeroConsent(state.consentPolicies)
+  const existingAction = state.invitationDisposition === 'accepted' || state.delivery.status !== 'idle'
 
   return (
     <div className="home-layout">
@@ -21,7 +24,7 @@ export function HomeView() {
             </p>
           </div>
         </div>
-        {state.autonomy === 'quiet' ? (
+        {state.autonomy === 'quiet' && !existingAction ? (
           <GlassPanel className="quiet-card">
             <p className="eyebrow">Quiet autonomy</p>
             <h2>Nora is holding the observation.</h2>
@@ -29,6 +32,19 @@ export function HomeView() {
               Switch Autonomy to Balanced or Active when you want proactive
               invitations to appear.
             </p>
+          </GlassPanel>
+        ) : !heroConsent.canSuggest && !existingAction ? (
+          <GlassPanel className="quiet-card consent-held-card">
+            <p className="eyebrow">Held by your consent settings</p>
+            <h2>Nora noticed the pattern and stopped there.</h2>
+            <p>{heroConsent.suggestionBoundary}</p>
+            <button
+              className="secondary-button"
+              onClick={() => dispatch({ type: 'navigate', destination: 'consent' })}
+              type="button"
+            >
+              Review consent settings
+            </button>
           </GlassPanel>
         ) : (
           <InvitationCard />
@@ -44,6 +60,13 @@ export function HomeView() {
             Nora can notice and suggest. Scheduling, messaging, and device
             handoff always wait for you.
           </p>
+          <button
+            className="text-button consent-console-link"
+            onClick={() => dispatch({ type: 'navigate', destination: 'consent' })}
+            type="button"
+          >
+            Open Consent Console
+          </button>
         </GlassPanel>
         <GlassPanel className="memory-preview">
           <p className="eyebrow">About Me signal</p>

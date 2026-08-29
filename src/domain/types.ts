@@ -1,6 +1,7 @@
 export type Destination =
   | 'home'
   | 'action-desk'
+  | 'consent'
   | 'conversations'
   | 'timeline'
   | 'about-me'
@@ -11,6 +12,18 @@ export type ConversationMode = 'dream' | 'daily' | 'eureka'
 export type AutonomyLevel = 'quiet' | 'balanced' | 'active'
 export type StretchLevel = 'gentle' | 'open' | 'bold'
 export type EnergyLevel = 'low' | 'medium' | 'high'
+
+export type ConsentDomain =
+  | 'dream'
+  | 'daily'
+  | 'eureka'
+  | 'sleep'
+  | 'activity'
+  | 'fitness'
+  | 'nutrition'
+
+export type ConsentCapability = 'off' | 'observe' | 'suggest' | 'prepare'
+export type ConsentPolicies = Record<ConsentDomain, ConsentCapability>
 
 export type ContextDomain =
   | 'dream'
@@ -325,6 +338,7 @@ export interface WorkbenchState {
   conversationMode: ConversationMode
   autonomy: AutonomyLevel
   stretch: StretchLevel
+  consentPolicies: ConsentPolicies
   invitation: Invitation
   invitationDisposition: 'offered' | 'adjusting' | 'accepted' | 'declined'
   invitationFeedback: 'less-like-this' | null

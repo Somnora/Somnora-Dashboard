@@ -320,3 +320,19 @@
 - Added `docs/action-desk.md` as the product and trust-boundary reference.
 - Browser QA caught a shared Field Note focus-scroll issue after the longer navigation sequence. Changing the decorative card crop from a hidden scroll container to a clipped container removed the nested horizontal scroll path and restored the complete Field Note frame.
 - Verified 49 unit and component tests, lint, type checking, production build, 24 functional browser tests, and one visual fixture path. Fresh Action Desk and completed Field Note frames were inspected at 1440 by 900.
+
+## 2026-08-28 - Ecosystem expansion step 4
+
+### Consent and Autonomy Console
+
+- Added Consent as a primary Workbench destination with a dedicated governance surface rather than hiding domain permissions inside general settings.
+- Added typed Off, Observe, Suggest, and Prepare boundaries for Dream, Daily, Eureka, Sleep, Activity, Fitness, and Nutrition.
+- Kept consequential actions locked to Ask every time. Autonomy controls surfacing frequency, Stretch Level controls invitation intensity, and neither grants execution authority.
+- Added a domain inspector for current capability, source state, data boundary, and the exact meaning of preparation.
+- Marked Fitness and Nutrition as disconnected future adapters. Their controls remain Off and cannot be elevated until a real connector exists.
+- Enforced the policy in the current hero flow. Restricting suggestion access holds the invitation, while Suggest without Prepare allows review but blocks device-action creation.
+- Repeated the preparation check in the Workbench provider so action creation cannot bypass the visible control surface.
+- Preserved consent already attached to an active action. New policy applies to future suggestions and preparations, while existing activity remains cancellable and visible in Action Desk.
+- Extended safe preference persistence with compact policy enums only and a backward-compatible migration for older Autonomy and Stretch records.
+- Added `docs/consent-console.md` as the governance and privacy reference.
+- Verified 59 unit and component tests, lint, type checking, production build, 27 functional browser tests, and one visual fixture path. Fresh Consent Console frames were inspected at 1440 by 900 and 1280 by 800.

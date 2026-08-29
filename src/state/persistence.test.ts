@@ -1,4 +1,5 @@
 import { persistenceKeys, loadDemoProgress, loadPreferences, saveDemoProgress, savePreferences } from './persistence'
+import { createDefaultConsentPolicies } from '../domain/consentPolicy'
 
 describe('safe persistence', () => {
   beforeEach(() => {
@@ -7,14 +8,42 @@ describe('safe persistence', () => {
   })
 
   it('stores only nonsensitive preferences in local storage', () => {
-    savePreferences(localStorage, { autonomy: 'active', stretch: 'open' })
+    const consentPolicies = createDefaultConsentPolicies()
+    savePreferences(localStorage, { autonomy: 'active', stretch: 'open', consentPolicies })
 
     expect(loadPreferences(localStorage)).toEqual({
       autonomy: 'active',
       stretch: 'open',
+      consentPolicies,
     })
     expect(localStorage).toHaveLength(1)
     expect(localStorage.getItem(persistenceKeys.preferences)).not.toContain('reflection')
+  })
+
+  it('migrates earlier preferences to the default consent boundaries', () => {
+    localStorage.setItem(persistenceKeys.preferences, JSON.stringify({
+      autonomy: 'balanced',
+      stretch: 'gentle',
+    }))
+
+    expect(loadPreferences(localStorage)).toEqual({
+      autonomy: 'balanced',
+      stretch: 'gentle',
+      consentPolicies: createDefaultConsentPolicies(),
+    })
+  })
+
+  it('rejects unavailable authority for a future adapter', () => {
+    localStorage.setItem(persistenceKeys.preferences, JSON.stringify({
+      autonomy: 'active',
+      stretch: 'open',
+      consentPolicies: {
+        ...createDefaultConsentPolicies(),
+        nutrition: 'prepare',
+      },
+    }))
+
+    expect(loadPreferences(localStorage)).toBeNull()
   })
 
   it('stores only a bounded simulated delivery snapshot in session storage', () => {

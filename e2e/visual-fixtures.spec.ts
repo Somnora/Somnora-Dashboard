@@ -47,6 +47,13 @@ test('@visual capture the recordable dashboard fixtures', async ({ page }) => {
   await expect(page.getByText('Every action has a boundary.')).toBeVisible()
   await capture(page, 'action-desk-1440')
 
+  await page.getByRole('button', { name: 'Consent', exact: true }).click()
+  await expect(page.getByText('Nora can be proactive without being in charge.')).toBeVisible()
+  await capture(page, 'consent-console-1440')
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await capture(page, 'consent-console-1280')
+  await page.setViewportSize({ width: 1440, height: 900 })
+
   await page.getByRole('button', { name: 'Analytics' }).click()
   await expect(page.getByText('This is context, not a health score.')).toBeVisible()
   await capture(page, 'analytics-1440')

@@ -7,6 +7,8 @@ import {
 import { setMemoryCorrection } from '../domain/memoryOverlay'
 import type {
   AutonomyLevel,
+  ConsentCapability,
+  ConsentDomain,
   ConversationMode,
   Destination,
   InvitationAdjustment,
@@ -17,12 +19,14 @@ import type {
   WorkbenchState,
 } from '../domain/types'
 import { demoProfile } from '../demo/profile'
+import { updateConsentPolicy } from '../domain/consentPolicy'
 
 export type WorkbenchAction =
   | { type: 'navigate'; destination: Destination }
   | { type: 'set-conversation-mode'; value: ConversationMode }
   | { type: 'set-autonomy'; value: AutonomyLevel }
   | { type: 'set-stretch'; value: StretchLevel }
+  | { type: 'set-consent-capability'; domain: ConsentDomain; value: ConsentCapability }
   | { type: 'open-why' }
   | { type: 'close-why' }
   | { type: 'open-adjustment' }
@@ -62,6 +66,15 @@ export function workbenchReducer(
         invitation: createHeroInvitation(demoProfile, action.value),
         invitationDisposition: 'offered',
         invitationFeedback: null,
+      }
+    case 'set-consent-capability':
+      return {
+        ...state,
+        consentPolicies: updateConsentPolicy(
+          state.consentPolicies,
+          action.domain,
+          action.value,
+        ),
       }
     case 'open-why':
       return {

@@ -80,4 +80,23 @@ describe('Action Desk records', () => {
     expect(history.find((record) => record.stage === 'failed')?.summary)
       .toContain('Nothing was marked delivered')
   })
+
+  it('keeps a blocked suggestion out of the Desk while retaining the noticed signal', () => {
+    const records = buildActionDeskRecords(demoProfile, stateWith({
+      consentPolicies: {
+        ...initialWorkbenchState.consentPolicies,
+        eureka: 'observe',
+      },
+    }))
+
+    expect(records.find((record) => record.current && record.actionType)).toBeUndefined()
+    expect(records.find((record) => record.stage === 'noticed')).toBeDefined()
+  })
+
+  it('holds proposals under Quiet autonomy without hiding the noticed context', () => {
+    const records = buildActionDeskRecords(demoProfile, stateWith({ autonomy: 'quiet' }))
+
+    expect(records.find((record) => record.current && record.actionType)).toBeUndefined()
+    expect(records.find((record) => record.stage === 'noticed')).toBeDefined()
+  })
 })

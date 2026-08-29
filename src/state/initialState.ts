@@ -1,5 +1,6 @@
 import { createHeroInvitation } from '../domain/invitationPolicy'
 import { emptyMemoryOverlay } from '../domain/memoryOverlay'
+import { createDefaultConsentPolicies } from '../domain/consentPolicy'
 import type { WorkbenchState } from '../domain/types'
 import { demoProfile } from '../demo/profile'
 
@@ -8,6 +9,7 @@ export const initialWorkbenchState: WorkbenchState = {
   conversationMode: 'eureka',
   autonomy: 'active',
   stretch: 'open',
+  consentPolicies: createDefaultConsentPolicies(),
   invitation: createHeroInvitation(demoProfile, 'open'),
   invitationDisposition: 'offered',
   invitationFeedback: null,

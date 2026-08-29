@@ -1,4 +1,5 @@
 import { routeLabel } from './actionRuntime'
+import { evaluateHeroConsent } from './consentPolicy'
 import type {
   DemoProfile,
   NoraActionRoute,
@@ -198,6 +199,7 @@ export function buildActionDeskRecords(
   profile: DemoProfile,
   state: WorkbenchState,
 ): ActionDeskRecord[] {
+  const consent = evaluateHeroConsent(state.consentPolicies)
   const notice: ActionDeskRecord = {
     id: 'notice-eureka-gap',
     title: 'Four quiet Eureka days',
@@ -215,7 +217,13 @@ export function buildActionDeskRecords(
     current: true,
   }
 
-  return [currentActionRecord(profile, state), notice, ...seededHistory]
+  const currentRecords: ActionDeskRecord[] = []
+  const existingDecision = state.invitationDisposition === 'accepted' || state.delivery.status !== 'idle'
+  const maySurfaceProposal = state.autonomy !== 'quiet' && consent.canSuggest
+  if (maySurfaceProposal || existingDecision) currentRecords.push(currentActionRecord(profile, state))
+  if (consent.canObserve) currentRecords.push(notice)
+
+  return [...currentRecords, ...seededHistory]
     .sort((left, right) => Date.parse(right.occurredAt) - Date.parse(left.occurredAt))
 }
 

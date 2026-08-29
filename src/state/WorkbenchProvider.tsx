@@ -5,6 +5,7 @@ import {
   createActionConsentReceipt,
   prepareNoraAction,
 } from '../domain/actionRuntime'
+import { evaluateHeroConsent } from '../domain/consentPolicy'
 import type {
   NoraActionDispatch,
   NoraActionSnapshot,
@@ -145,8 +146,9 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
     savePreferences(window.localStorage, {
       autonomy: state.autonomy,
       stretch: state.stretch,
+      consentPolicies: state.consentPolicies,
     })
-  }, [state.autonomy, state.stretch])
+  }, [state.autonomy, state.consentPolicies, state.stretch])
 
   useEffect(() => {
     if (transportMode !== 'demo') return
@@ -251,6 +253,9 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
   }, [])
 
   const dispatchInvitation = useCallback(async () => {
+    if (!evaluateHeroConsent(state.consentPolicies).canPrepare) {
+      throw new Error('Your consent settings do not allow Nora to prepare this device action.')
+    }
     const createdAt = new Date().toISOString()
     const actionContract = prepareHeroAction(
       state,
@@ -272,6 +277,10 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
       setConnectionError('Accept this invitation before creating an action.')
       return
     }
+    if (!evaluateHeroConsent(state.consentPolicies).canPrepare) {
+      setConnectionError('Your consent settings do not allow Nora to prepare this device action.')
+      return
+    }
     if (transportMode === 'relay' && pairing?.status !== 'paired') {
       setConnectionError('Pair this Workbench with the iPhone before sending.')
       return
@@ -281,9 +290,13 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
     } catch (error) {
       setConnectionError(error instanceof Error ? error.message : 'The invitation could not be sent.')
     }
-  }, [dispatchInvitation, pairing?.status, state.invitationDisposition])
+  }, [dispatchInvitation, pairing?.status, state.consentPolicies, state.invitationDisposition])
 
   const retry = useCallback(async () => {
+    if (!evaluateHeroConsent(state.consentPolicies).canPrepare) {
+      setConnectionError('Your consent settings do not allow Nora to prepare this device action.')
+      return
+    }
     if (transportMode === 'demo') {
       if (!state.delivery.actionId) return
       const transport = transportRef.current
@@ -303,7 +316,7 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
     } catch (error) {
       setConnectionError(error instanceof Error ? error.message : 'The invitation could not be retried.')
     }
-  }, [dispatchInvitation, state.delivery.actionId])
+  }, [dispatchInvitation, state.consentPolicies, state.delivery.actionId])
 
   const cancel = useCallback(async () => {
     if (!state.delivery.actionId) return
