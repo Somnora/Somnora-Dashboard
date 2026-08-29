@@ -8,6 +8,7 @@ const destinations: Array<{ id: Destination; label: string; mark: string }> = [
   { id: 'conversations', label: 'Conversations', mark: 'C' },
   { id: 'timeline', label: 'Timeline', mark: 'L' },
   { id: 'about-me', label: 'About Me', mark: 'M' },
+  { id: 'growth', label: 'Growth', mark: 'G' },
   { id: 'themes', label: 'Themes', mark: 'T' },
   { id: 'analytics', label: 'Analytics', mark: 'A' },
 ]

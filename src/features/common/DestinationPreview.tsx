@@ -18,6 +18,12 @@ const copy: Record<
     body: 'Conversations, body signals, activities, Nora observations, and user-confirmed growth share one private chronology.',
     detail: 'Each moment stays connected to its source and confidence boundary.',
   },
+  growth: {
+    label: 'Then and now',
+    title: 'Change without a score.',
+    body: 'Sustained boundaries, returned curiosity, and chosen experiments stay connected to their sources and your confirmation.',
+    detail: 'Growth remains a user-owned story, never a rank or disclosure target.',
+  },
   themes: {
     label: 'Recurring context',
     title: 'Patterns without turning you into a score.',

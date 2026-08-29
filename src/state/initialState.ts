@@ -16,6 +16,7 @@ export const initialWorkbenchState: WorkbenchState = {
   selectedMemoryNodeId: null,
   focusEvidenceIds: [],
   memoryOverlay: emptyMemoryOverlay,
+  growthReflections: {},
   delivery: {
     status: 'idle',
     progressCount: 0,

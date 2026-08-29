@@ -25,6 +25,23 @@ describe('buildContextTimeline', () => {
     expect(events.some((event) => event.id === 'evidence-evidence-current-flatness')).toBe(false)
   })
 
+  it('returns a user-reviewed growth comparison as session-only context', () => {
+    const events = buildContextTimeline(demoProfile, {
+      ...initialWorkbenchState,
+      growthReflections: { 'growth-curiosity-returned': 'needs-nuance' },
+    })
+    const review = events.find((event) =>
+      event.id === 'growth-reflection-growth-curiosity-returned')
+
+    expect(review).toMatchObject({
+      kind: 'correction',
+      actor: 'user',
+      privacy: 'session-only',
+      relatedDestination: 'growth',
+    })
+    expect(review?.summary).toContain('needing more nuance')
+  })
+
   it('keeps Nora interpretations tentative and user choices confirmed', () => {
     const acceptedState = {
       ...initialWorkbenchState,

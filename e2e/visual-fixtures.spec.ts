@@ -39,6 +39,16 @@ test('@visual capture the recordable dashboard fixtures', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Windows and light/ })).toBeVisible()
   await capture(page, 'themes-1440')
 
+  await page.getByRole('button', { name: 'Growth' }).click()
+  await expect(page.getByText('Growth is a story, not a score')).toBeVisible()
+  await capture(page, 'growth-1440')
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await capture(page, 'growth-1280')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.getByRole('button', { name: /Curiosity returned in more than one form/ }).click()
+  await page.getByRole('button', { name: 'Needs nuance' }).click()
+  await capture(page, 'growth-reviewed-1440')
+
   await page.getByRole('button', { name: 'Timeline' }).click()
   await expect(page.getByText('Your days make more sense together.')).toBeVisible()
   await capture(page, 'timeline-1440')

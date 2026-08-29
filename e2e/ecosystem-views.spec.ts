@@ -16,13 +16,32 @@ test('conversation modes switch and preserve the selected mode in session', asyn
   )
 })
 
-test('themes keep imagery personal and growth non-scored', async ({ page }) => {
+test('themes keep imagery personal', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Themes' }).click()
   await page.getByRole('button', { name: /Windows and light/ }).click()
 
   await expect(page.getByText(/not a universal dream symbol/)).toBeVisible()
-  await expect(page.getByText(/without becoming a perfection score/)).toBeVisible()
+})
+
+test('Growth compares source-backed change without gamification', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Growth' }).click()
+
+  await expect(page.getByText('Growth is a story, not a score')).toBeVisible()
+  await expect(page.getByText('No points')).toBeVisible()
+  await expect(page.getByText('No streak pressure')).toBeVisible()
+  await expect(page.getByText(/two weeks without taking my phone into bed/)).toBeVisible()
+
+  await page.getByRole('button', { name: 'This feels true' }).click()
+  await expect(page.getByText(/true for this session/)).toBeVisible()
+
+  await page.getByRole('button', { name: /Curiosity returned in more than one form/ }).click()
+  await page.getByRole('button', { name: 'Needs nuance' }).click()
+  await expect(page.getByText(/open to your correction/)).toBeVisible()
+  await page.getByRole('button', { name: 'Open source view' }).click()
+  await expect(page.getByRole('heading', { name: 'Conversations' })).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Eureka' })).toHaveAttribute('aria-selected', 'true')
 })
 
 test('analytics exposes units and a seeded-data boundary', async ({ page }) => {

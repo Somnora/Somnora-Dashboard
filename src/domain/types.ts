@@ -5,6 +5,7 @@ export type Destination =
   | 'conversations'
   | 'timeline'
   | 'about-me'
+  | 'growth'
   | 'themes'
   | 'analytics'
 
@@ -12,6 +13,8 @@ export type ConversationMode = 'dream' | 'daily' | 'eureka'
 export type AutonomyLevel = 'quiet' | 'balanced' | 'active'
 export type StretchLevel = 'gentle' | 'open' | 'bold'
 export type EnergyLevel = 'low' | 'medium' | 'high'
+
+export type GrowthReflection = 'confirmed' | 'not-yet' | 'needs-nuance'
 
 export type ConsentDomain =
   | 'dream'
@@ -345,6 +348,7 @@ export interface WorkbenchState {
   selectedMemoryNodeId: string | null
   focusEvidenceIds: string[]
   memoryOverlay: MemoryOverlay
+  growthReflections: Record<string, GrowthReflection>
   delivery: DeliveryState
   whyOpen: boolean
   adjustmentOpen: boolean

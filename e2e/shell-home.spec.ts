@@ -125,6 +125,44 @@ test('Consent Console keeps every authority control inside both target widths', 
   }
 })
 
+test('Growth keeps its comparison inside both target widths', async ({ page }) => {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1280, height: 800 },
+  ]) {
+    await page.setViewportSize(viewport)
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Growth' }).click()
+    await expect(page.getByText('Growth is a story, not a score')).toBeVisible()
+
+    const geometry = await page.evaluate(() => {
+      const workspace = document.querySelector('#main-content')?.getBoundingClientRect()
+      const layout = document.querySelector('.growth-layout')?.getBoundingClientRect()
+      const moments = Array.from(document.querySelectorAll('.growth-moments article'))
+      const sourceButton = Array.from(document.querySelectorAll('button')).find(
+        (button) => button.textContent?.trim() === 'Open source view',
+      )?.getBoundingClientRect()
+      return {
+        bodyWidth: document.body.scrollWidth,
+        viewportWidth: window.innerWidth,
+        layoutLeft: layout?.left,
+        layoutRight: layout?.right,
+        momentOverflow: moments.some((moment) => moment.scrollWidth > moment.clientWidth),
+        sourceButtonBottom: sourceButton?.bottom,
+        workspaceLeft: workspace?.left,
+        workspaceRight: workspace?.right,
+        workspaceBottom: workspace?.bottom,
+      }
+    })
+
+    expect(geometry.bodyWidth).toBeLessThanOrEqual(geometry.viewportWidth)
+    expect(geometry.momentOverflow).toBe(false)
+    expect(geometry.sourceButtonBottom).toBeLessThanOrEqual(geometry.workspaceBottom ?? viewport.height)
+    expect(geometry.layoutLeft).toBeGreaterThanOrEqual(geometry.workspaceLeft ?? 0)
+    expect(geometry.layoutRight).toBeLessThanOrEqual(geometry.workspaceRight ?? viewport.width)
+  }
+})
+
 test('changing destinations resets the workspace scroll position', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Analytics' }).click()

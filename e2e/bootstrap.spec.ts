@@ -38,6 +38,8 @@ test('primary destinations remain free of browser console warnings and errors', 
   await page.waitForTimeout(1100)
   await page.getByRole('button', { name: 'Themes' }).click()
   await expect(page.getByRole('button', { name: /Windows and light/ })).toBeVisible()
+  await page.getByRole('button', { name: 'Growth' }).click()
+  await expect(page.getByText('Growth is a story, not a score')).toBeVisible()
   await page.getByRole('button', { name: 'Analytics' }).click()
   await expect(page.getByText('This is context, not a health score.')).toBeVisible()
 

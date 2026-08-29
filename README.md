@@ -22,14 +22,16 @@ Recommended demo path:
 3. Start the simulated activity and add the three privacy-safe demo photographs.
 4. Open Consent Console to show domain-specific Observe, Suggest, and Prepare boundaries with consequential actions locked to Ask every time.
 5. Open Action Desk to show the difference between what Nora noticed, what she proposed, and what you authorized.
-6. Open Timeline, Conversations, Themes, and Analytics to show the wider ecosystem.
-7. Return Home and open the private burn exercise as the final visual beat.
+6. Open Growth to compare a sustained boundary, returned curiosity, and user-chosen activities without a score.
+7. Open Timeline, Conversations, Themes, and Analytics to show the wider ecosystem.
+8. Return Home and open the private burn exercise as the final visual beat.
 
 ## What is working in this repository
 
 - A deterministic, privacy-safe 30-day profile for Dream, Daily, Eureka, themes, biometrics, and About Me.
 - A bounded, inspectable memory graph with confirmation, correction, and forgetting controls.
 - A universal Context Timeline and a calm Action Desk that make source provenance, consent, route, progress, outcome, and memory boundaries inspectable.
+- A source-linked Growth workspace where the user can confirm, defer, or qualify then and now comparisons without points, streak pressure, disclosure rewards, or durable memory writes.
 - A Consent and Autonomy Console with enforced per-domain Off, Observe, Suggest, and Prepare limits. Fitness and Nutrition remain visibly disconnected future adapters.
 - A generalized Nora action runtime with typed contracts for Three Beautiful Things, Breathing Reset, Six Line Story, and Tiny Detour. Only Three Beautiful Things currently has a live relay adapter.
 - A complete offline `DemoTransport` state machine labeled as simulated, including consent, iPhone delivery, Watch delivery, acknowledgement, progress, failure, retry, cancellation, expiry, and refresh recovery.

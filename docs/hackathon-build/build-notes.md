@@ -336,3 +336,18 @@
 - Extended safe preference persistence with compact policy enums only and a backward-compatible migration for older Autonomy and Stretch records.
 - Added `docs/consent-console.md` as the governance and privacy reference.
 - Verified 59 unit and component tests, lint, type checking, production build, 27 functional browser tests, and one visual fixture path. Fresh Consent Console frames were inspected at 1440 by 900 and 1280 by 800.
+
+## 2026-08-28 - Ecosystem expansion step 5
+
+### Growth Without Gamification
+
+- Added Growth as a primary Workbench destination with a dedicated then and now narrative surface rather than another analytics scorecard.
+- Added typed, pure growth-story assembly for a user-confirmed boundary, returned curiosity, and agency across a declined activity and a completed experiment.
+- Kept every story connected to its source, confidence, seeded-data boundary, and related Workbench destination. Observed scene-change patterns remain explicitly non-causal.
+- Added equal This feels true, Not yet, and Needs nuance controls. A no or correction carries no penalty and can remain part of the visible story.
+- Kept growth reviews in current reducer memory only. They do not enter browser storage, the relay, or durable Nora memory.
+- Returned user review to the universal Context Timeline as session-only context.
+- Reused About Me forgetting boundaries. A growth comparison disappears when its supporting memory evidence is forgotten.
+- Removed the earlier static growth card from Themes so recurring motifs and personal change remain distinct workspaces.
+- Added `docs/growth-without-gamification.md` as the product, evidence, and privacy reference.
+- Verified 64 unit and component tests, lint, type checking, production build, 29 functional browser tests, and one visual fixture path. Fresh Growth frames were inspected at 1440 by 900 and 1280 by 800, including the Needs nuance state.

@@ -29,6 +29,11 @@ const ThemesView = lazy(() =>
     default: module.ThemesView,
   })),
 )
+const GrowthView = lazy(() =>
+  import('./features/growth/GrowthView').then((module) => ({
+    default: module.GrowthView,
+  })),
+)
 const AnalyticsView = lazy(() =>
   import('./features/analytics/AnalyticsView').then((module) => ({
     default: module.AnalyticsView,
@@ -67,6 +72,8 @@ function ActiveDestination() {
       return <ContextTimelineView />
     case 'themes':
       return <ThemesView />
+    case 'growth':
+      return <GrowthView />
     case 'analytics':
       return <AnalyticsView />
   }

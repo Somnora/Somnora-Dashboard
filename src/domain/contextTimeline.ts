@@ -4,6 +4,7 @@ import type {
   MemoryNode,
   WorkbenchState,
 } from './types'
+import { buildGrowthStories } from './growthStory'
 
 function evidenceDate(profile: DemoProfile, node: MemoryNode): string {
   const dates = node.evidenceIds
@@ -205,6 +206,31 @@ function buildSessionEvents(
       tags: [correction.kind],
       privacy: 'session-only',
       relatedDestination: 'about-me',
+    })
+  })
+
+  const growthStories = buildGrowthStories(profile, state)
+  Object.entries(state.growthReflections).forEach(([storyId, reflection]) => {
+    const story = growthStories.find((item) => item.id === storyId)
+    if (!story) return
+    events.push({
+      id: `growth-reflection-${storyId}`,
+      occurredAt: invitationTime,
+      domain: 'nora',
+      kind: reflection === 'confirmed' ? 'growth' : 'correction',
+      actor: 'user',
+      confidence: 'confirmed',
+      title: reflection === 'confirmed' ? 'Growth story confirmed' : 'Growth story qualified',
+      summary: reflection === 'confirmed'
+        ? `Jules marked "${story.title}" as true for this session.`
+        : reflection === 'not-yet'
+          ? `Jules marked "${story.title}" as not true yet.`
+          : `Jules marked "${story.title}" as needing more nuance.`,
+      sourceLabel: 'User review in Growth',
+      evidenceIds: story.evidenceIds,
+      tags: ['growth-review', reflection],
+      privacy: 'session-only',
+      relatedDestination: 'growth',
     })
   })
 

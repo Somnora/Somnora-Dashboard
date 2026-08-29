@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useWorkbench } from '../../state/workbenchContext'
-import { GlassPanel } from '../common/GlassPanel'
 import { ThemeDetail } from './ThemeDetail'
 
 export function ThemesView() {
@@ -28,22 +27,6 @@ export function ThemesView() {
             </button>
           ))}
         </div>
-        <GlassPanel className="growth-story">
-          <div>
-            <p className="eyebrow">A change worth seeing</p>
-            <h2>From trying a boundary to trusting it.</h2>
-          </div>
-          <div className="growth-comparison" aria-label="Growth comparison">
-            <article>
-              <span>Then · Aug 6</span>
-              <strong>A bedtime boundary was an experiment.</strong>
-            </article>
-            <article>
-              <span>Now · Two weeks later</span>
-              <strong>The choice has held without becoming a perfection score.</strong>
-            </article>
-          </div>
-        </GlassPanel>
       </section>
       <aside>
         <ThemeDetail theme={selected} />

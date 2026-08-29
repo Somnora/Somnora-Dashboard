@@ -30,6 +30,24 @@ describe('seeded ecosystem views', () => {
     expect(screen.getByText(/not a universal dream symbol/)).toBeInTheDocument()
   })
 
+  it('keeps growth source-linked, user-reviewed, and free of reward mechanics', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: 'Growth' }))
+
+    expect(await screen.findByText('Growth is a story, not a score')).toBeInTheDocument()
+    expect(screen.getByText('No points')).toBeInTheDocument()
+    expect(screen.getByText('No streak pressure')).toBeInTheDocument()
+    expect(screen.getByText(/I have gone two weeks without taking my phone into bed/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'This feels true' }))
+    expect(screen.getByText(/true for this session/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Curiosity returned in more than one form/ }))
+    await user.click(screen.getByRole('button', { name: 'Needs nuance' }))
+    expect(screen.getByText(/open to your correction/)).toBeInTheDocument()
+  })
+
   it('labels biometric dates, units, and demo boundaries without a health score', async () => {
     const user = userEvent.setup()
     render(<App />)

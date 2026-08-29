@@ -15,6 +15,7 @@ import type {
   MemoryCorrection,
   NoraActionSnapshot,
   DeliveryStatus,
+  GrowthReflection,
   StretchLevel,
   WorkbenchState,
 } from '../domain/types'
@@ -47,6 +48,7 @@ export type WorkbenchAction =
   | { type: 'delivery-error'; message: string; updatedAt: string }
   | { type: 'reset-mission'; simulated?: boolean }
   | { type: 'correct-memory'; correction: MemoryCorrection }
+  | { type: 'set-growth-reflection'; storyId: string; value: GrowthReflection }
 
 export function workbenchReducer(
   state: WorkbenchState,
@@ -198,6 +200,14 @@ export function workbenchReducer(
           state.memoryOverlay,
           action.correction,
         ),
+      }
+    case 'set-growth-reflection':
+      return {
+        ...state,
+        growthReflections: {
+          ...state.growthReflections,
+          [action.storyId]: action.value,
+        },
       }
   }
 }
