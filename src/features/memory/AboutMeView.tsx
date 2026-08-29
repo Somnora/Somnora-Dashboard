@@ -5,10 +5,13 @@ import { EvidenceInspector } from './EvidenceInspector'
 import { MemoryGraph } from './MemoryGraph'
 
 export function AboutMeView() {
-  const { state, profile, dispatch } = useWorkbench()
+  const { state, profile, dispatch, connection, live } = useWorkbench()
+  const memoryNodes = connection.mode === 'relay' && live.contextGraph
+    ? live.contextGraph.nodes
+    : profile.memoryNodes
   const activeEvidence = remainingEvidenceIds(
     state.focusEvidenceIds,
-    profile.memoryNodes,
+    memoryNodes,
     state.memoryOverlay,
   )
 
@@ -18,12 +21,18 @@ export function AboutMeView() {
         <div className="graph-intro">
           <div>
             <p className="eyebrow">
-              {state.whyOpen ? 'Focused explanation' : 'Your living context'}
+              {state.whyOpen
+                ? 'Focused explanation'
+                : connection.mode === 'relay'
+                  ? 'Your live account context'
+                  : 'Your living context'}
             </p>
             <p>
               {state.whyOpen
                 ? `${activeEvidence.length} of ${state.focusEvidenceIds.length} invitation sources remain active.`
-                : 'Explore what you said, what Nora noticed, and what remains uncertain.'}
+                : connection.mode === 'relay'
+                  ? 'Explore what you said, what Nora noticed, and correct the account record when needed.'
+                  : 'Explore what you said, what Nora noticed, and what remains uncertain.'}
             </p>
           </div>
           {state.whyOpen ? (
@@ -37,7 +46,30 @@ export function AboutMeView() {
           ) : null}
         </div>
         <GlassPanel className="graph-panel">
-          <MemoryGraph />
+          {connection.mode === 'relay' && connection.pairing?.status !== 'paired' ? (
+            <div className="live-pairing-required">
+              <p className="eyebrow">Phone link required</p>
+              <h2>Connect your Somnora account.</h2>
+              <p>The graph appears after the iPhone claims the six-digit code.</p>
+              {connection.pairing?.code ? (
+                <>
+                  <output className="pairing-code" aria-label={`Pairing code ${connection.pairing.code}`}>
+                    {connection.pairing.code}
+                  </output>
+                  <small>The code expires after ten minutes. The revocable device link lasts 30 days.</small>
+                </>
+              ) : (
+                <button className="primary-button" onClick={() => void connection.pair()} type="button">
+                  Generate code
+                </button>
+              )}
+              {connection.errorMessage ? <p className="live-error-copy" role="alert">{connection.errorMessage}</p> : null}
+            </div>
+          ) : live.loading && !live.contextGraph ? (
+            <div className="live-pairing-required" role="status">Loading your context...</div>
+          ) : (
+            <MemoryGraph />
+          )}
         </GlassPanel>
       </section>
       <aside aria-label="Selected memory evidence">

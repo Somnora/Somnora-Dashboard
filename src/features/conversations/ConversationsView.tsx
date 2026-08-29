@@ -1,8 +1,8 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import type { ConversationMode } from '../../domain/types'
 import { useWorkbench } from '../../state/workbenchContext'
 import { GlassPanel } from '../common/GlassPanel'
-import { ConversationThread } from './ConversationThread'
+import { ConversationThread, LiveConversationThreadView } from './ConversationThread'
 
 const modeCopy: Record<ConversationMode, { note: string; question: string }> = {
   dream: {
@@ -20,7 +20,8 @@ const modeCopy: Record<ConversationMode, { note: string; question: string }> = {
 }
 
 export function ConversationsView() {
-  const { state, profile, dispatch } = useWorkbench()
+  const { state, profile, dispatch, connection, live } = useWorkbench()
+  const [draft, setDraft] = useState('')
   const threadRef = useRef<HTMLDivElement>(null)
   const positions = useRef<Record<ConversationMode, number>>({
     dream: 0,
@@ -30,6 +31,141 @@ export function ConversationsView() {
   const thread = profile.conversations.find(
     (item) => item.mode === state.conversationMode,
   )
+
+  if (connection.mode === 'relay') {
+    const paired = connection.pairing?.status === 'paired'
+    const modeThreads = live.threads.filter((item) => item.mode === state.conversationMode)
+    const active = live.activeThread?.mode === state.conversationMode
+      ? live.activeThread
+      : null
+
+    const selectLiveMode = (mode: ConversationMode) => {
+      dispatch({ type: 'set-conversation-mode', value: mode })
+      const next = live.threads.find((item) => item.mode === mode)
+      if (next) void live.openThread(next.threadId)
+      else live.startThread(mode)
+    }
+
+    const submit = async () => {
+      const message = draft.trim()
+      if (!message || live.sending) return
+      setDraft('')
+      await live.sendMessage(message, state.conversationMode)
+    }
+
+    return (
+      <div className="conversations-layout live-conversations-layout">
+        <GlassPanel className="live-thread-list">
+          <div className="live-thread-list-heading">
+            <div>
+              <p className="eyebrow">Account conversations</p>
+              <h2>Continue anywhere</h2>
+            </div>
+            <button
+              className="secondary-button"
+              disabled={!paired}
+              onClick={() => live.startThread(state.conversationMode)}
+              type="button"
+            >
+              Start thread
+            </button>
+          </div>
+          <div className="conversation-tabs" role="tablist" aria-label="Somnora conversation mode">
+            {(['dream', 'daily', 'eureka'] as ConversationMode[]).map((mode) => (
+              <button
+                aria-selected={state.conversationMode === mode}
+                className="conversation-tab"
+                key={mode}
+                onClick={() => selectLiveMode(mode)}
+                role="tab"
+                type="button"
+              >
+                {mode === 'eureka' ? 'Eureka' : mode === 'daily' ? 'Daily' : 'Dream'}
+              </button>
+            ))}
+          </div>
+          <div className="live-thread-items">
+            {modeThreads.map((item) => (
+              <button
+                aria-current={active?.threadId === item.threadId}
+                className="live-thread-item"
+                key={item.threadId}
+                onClick={() => void live.openThread(item.threadId)}
+                type="button"
+              >
+                <strong>{item.title}</strong>
+                <span>{item.sourceDevice} · {item.messageCount} messages</span>
+                <time dateTime={item.updatedAt}>
+                  {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(new Date(item.updatedAt))}
+                </time>
+              </button>
+            ))}
+            {paired && modeThreads.length === 0 ? (
+              <p className="live-empty-copy">No synced {state.conversationMode} threads yet.</p>
+            ) : null}
+          </div>
+        </GlassPanel>
+
+        <GlassPanel className="conversation-workspace live-conversation-workspace">
+          {!paired ? (
+            <div className="live-pairing-required">
+              <p className="eyebrow">Phone link required</p>
+              <h2>Connect your Somnora account.</h2>
+              <p>Enter the six-digit code in Somnora on your iPhone.</p>
+              {connection.pairing?.code ? (
+                <>
+                  <output className="pairing-code" aria-label={`Pairing code ${connection.pairing.code}`}>
+                    {connection.pairing.code}
+                  </output>
+                  <small>The code expires after ten minutes. The revocable device link lasts 30 days.</small>
+                </>
+              ) : (
+                <button className="primary-button" onClick={() => void connection.pair()} type="button">
+                  Generate code
+                </button>
+              )}
+              {connection.errorMessage ? <p className="live-error-copy" role="alert">{connection.errorMessage}</p> : null}
+            </div>
+          ) : (
+            <>
+              <div className="thread-scroll" ref={threadRef}>
+                <div className="thread-heading">
+                  <p className="eyebrow">Live {state.conversationMode} thread</p>
+                  <h2>{active?.title ?? `New ${state.conversationMode} conversation`}</h2>
+                  <p>{modeCopy[state.conversationMode].note}</p>
+                </div>
+                {active && (active.messages?.length ?? 0) > 0 ? (
+                  <LiveConversationThreadView thread={active} />
+                ) : (
+                  <p className="live-empty-copy">Start here and Nora will continue with the same account context used on your phone.</p>
+                )}
+                {live.loading ? <p className="live-status-copy" role="status">Refreshing this conversation...</p> : null}
+              </div>
+              <form className="live-composer" onSubmit={(event) => {
+                event.preventDefault()
+                void submit()
+              }}>
+                <label className="sr-only" htmlFor="live-nora-message">Message Nora</label>
+                <textarea
+                  disabled={live.sending}
+                  id="live-nora-message"
+                  maxLength={8_000}
+                  onChange={(event) => setDraft(event.target.value)}
+                  placeholder="Talk with Nora..."
+                  rows={2}
+                  value={draft}
+                />
+                <button className="primary-button" disabled={!draft.trim() || live.sending} type="submit">
+                  {live.sending ? 'Nora is thinking...' : 'Send'}
+                </button>
+              </form>
+              {live.errorMessage ? <p className="live-error-copy" role="alert">{live.errorMessage}</p> : null}
+            </>
+          )}
+        </GlassPanel>
+      </div>
+    )
+  }
 
   if (!thread) return null
 

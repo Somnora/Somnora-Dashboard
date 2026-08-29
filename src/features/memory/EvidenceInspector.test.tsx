@@ -23,6 +23,20 @@ const connection = {
   pair: vi.fn(),
 }
 
+const live = {
+  threads: [],
+  activeThread: null,
+  contextGraph: null,
+  loading: false,
+  sending: false,
+  errorMessage: null,
+  refresh: vi.fn(),
+  openThread: vi.fn(),
+  startThread: vi.fn(),
+  sendMessage: vi.fn(),
+  correctMemory: vi.fn(),
+}
+
 describe('EvidenceInspector', () => {
   it('shows source type, date, evidence, and correction controls', async () => {
     const user = userEvent.setup()
@@ -37,6 +51,7 @@ describe('EvidenceInspector', () => {
           dispatch,
           profile: demoProfile,
           connection,
+          live,
           mission,
         }}
       >
@@ -78,6 +93,7 @@ describe('EvidenceInspector', () => {
           dispatch,
           profile: demoProfile,
           connection,
+          live,
           mission,
         }}
       >

@@ -18,24 +18,30 @@ import { MemoryNode, type MemoryFlowNode } from './MemoryNode'
 const nodeTypes: NodeTypes = { memory: MemoryNode }
 
 export function MemoryGraph() {
-  const { state, profile, dispatch } = useWorkbench()
+  const { state, profile, dispatch, connection, live } = useWorkbench()
+  const memoryNodes = connection.mode === 'relay' && live.contextGraph
+    ? live.contextGraph.nodes
+    : profile.memoryNodes
+  const memoryEdges = connection.mode === 'relay' && live.contextGraph
+    ? live.contextGraph.edges
+    : profile.memoryEdges
   const activeGraph = useMemo(
     () =>
       applyMemoryOverlay(
-        profile.memoryNodes,
-        profile.memoryEdges,
+        memoryNodes,
+        memoryEdges,
         state.memoryOverlay,
       ),
-    [profile.memoryEdges, profile.memoryNodes, state.memoryOverlay],
+    [memoryEdges, memoryNodes, state.memoryOverlay],
   )
   const activeFocusEvidence = useMemo(
     () =>
       remainingEvidenceIds(
         state.focusEvidenceIds,
-        profile.memoryNodes,
+        memoryNodes,
         state.memoryOverlay,
       ),
-    [profile.memoryNodes, state.focusEvidenceIds, state.memoryOverlay],
+    [memoryNodes, state.focusEvidenceIds, state.memoryOverlay],
   )
   const hasFocus = activeFocusEvidence.length > 0
 

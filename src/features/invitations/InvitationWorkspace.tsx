@@ -163,7 +163,7 @@ export function InvitationWorkspace() {
                   ? 'Enter this code on iPhone'
                   : 'Generate a single-use code'}
               </strong>
-              <small>The code expires after ten minutes. The relay session expires after two hours.</small>
+              <small>The code expires after ten minutes. The revocable device link lasts 30 days.</small>
             </div>
             {connection.pairing?.code ? (
               <output className="pairing-code" aria-label={`Pairing code ${connection.pairing.code}`}>

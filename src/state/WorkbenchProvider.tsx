@@ -7,6 +7,10 @@ import {
 } from '../domain/actionRuntime'
 import { evaluateHeroConsent } from '../domain/consentPolicy'
 import type {
+  ConversationMode,
+  LiveContextGraph,
+  LiveConversationThread,
+  MemoryCorrection,
   NoraActionDispatch,
   NoraActionSnapshot,
   PairingSession,
@@ -28,10 +32,45 @@ import { WorkbenchContext } from './workbenchContext'
 const transportMode: 'demo' | 'relay' = import.meta.env.VITE_TRANSPORT === 'relay'
   ? 'relay'
   : 'demo'
+const pairingStorageKey = 'somnora-workbench-pairing-v1'
+
+function loadStoredPairing(): PairingSession | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(pairingStorageKey) ?? 'null') as PairingSession | null
+    if (
+      !stored ||
+      stored.simulated ||
+      stored.status !== 'paired' ||
+      Date.parse(stored.expiresAt) <= Date.now()
+    ) {
+      window.localStorage.removeItem(pairingStorageKey)
+      return null
+    }
+    return { ...stored, code: undefined }
+  } catch {
+    window.localStorage.removeItem(pairingStorageKey)
+    return null
+  }
+}
+
+function saveStoredPairing(pairing: PairingSession | null) {
+  if (typeof window === 'undefined') return
+  if (!pairing || pairing.status !== 'paired' || pairing.simulated) {
+    window.localStorage.removeItem(pairingStorageKey)
+    return
+  }
+  window.localStorage.setItem(pairingStorageKey, JSON.stringify({ ...pairing, code: undefined }))
+}
 
 function createConfiguredTransport(): WorkbenchTransport {
   if (transportMode === 'relay') {
-    return new RelayTransport(import.meta.env.VITE_WORKBENCH_API_ORIGIN ?? '')
+    return new RelayTransport(
+      import.meta.env.VITE_WORKBENCH_API_ORIGIN ?? '',
+      undefined,
+      undefined,
+      loadStoredPairing()?.id,
+    )
   }
   return new DemoTransport()
 }
@@ -119,11 +158,126 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
     initialWorkbenchState,
     restoreSafeState,
   )
-  const [pairing, setPairing] = useState<PairingSession | null>(null)
+  const [pairing, setPairing] = useState<PairingSession | null>(loadStoredPairing)
   const [connectionError, setConnectionError] = useState<string | null>(null)
+  const [liveThreads, setLiveThreads] = useState<LiveConversationThread[]>([])
+  const [activeLiveThread, setActiveLiveThread] = useState<LiveConversationThread | null>(null)
+  const [liveContextGraph, setLiveContextGraph] = useState<LiveContextGraph | null>(null)
+  const [liveLoading, setLiveLoading] = useState(false)
+  const [liveSending, setLiveSending] = useState(false)
+  const [liveError, setLiveError] = useState<string | null>(null)
   const transportRef = useRef<WorkbenchTransport>(createConfiguredTransport())
   const idempotencyKeyRef = useRef(newIdempotencyKey())
   const consentReceiptIdRef = useRef(newIdempotencyKey())
+  const activeLiveThreadRef = useRef<LiveConversationThread | null>(null)
+
+  useEffect(() => {
+    activeLiveThreadRef.current = activeLiveThread
+  }, [activeLiveThread])
+
+  const relayTransport = useCallback(() => {
+    const transport = transportRef.current
+    if (!(transport instanceof RelayTransport)) {
+      throw new Error('Live account data requires relay mode.')
+    }
+    return transport
+  }, [])
+
+  const refreshLiveData = useCallback(async () => {
+    if (transportMode !== 'relay' || pairing?.status !== 'paired') return
+    setLiveLoading(true)
+    try {
+      const transport = relayTransport()
+      const [threads, graph] = await Promise.all([
+        transport.listThreads(),
+        transport.getContextGraph(),
+      ])
+      setLiveThreads(threads)
+      setLiveContextGraph(graph)
+      const current = activeLiveThreadRef.current
+      const currentId = current?.threadId
+      if (currentId && threads.some((thread) => thread.threadId === currentId)) {
+        setActiveLiveThread(await transport.getThread(currentId))
+      } else if (!current && threads[0]) {
+        setActiveLiveThread(await transport.getThread(threads[0].threadId))
+      }
+      setLiveError(null)
+    } catch (error) {
+      setLiveError(error instanceof Error ? error.message : 'Live Somnora data could not be refreshed.')
+    } finally {
+      setLiveLoading(false)
+    }
+  }, [pairing?.status, relayTransport])
+
+  const openLiveThread = useCallback(async (threadId: string) => {
+    if (transportMode !== 'relay' || pairing?.status !== 'paired') return
+    setLiveLoading(true)
+    try {
+      setActiveLiveThread(await relayTransport().getThread(threadId))
+      setLiveError(null)
+    } catch (error) {
+      setLiveError(error instanceof Error ? error.message : 'The conversation could not be opened.')
+    } finally {
+      setLiveLoading(false)
+    }
+  }, [pairing?.status, relayTransport])
+
+  const startLiveThread = useCallback((mode: ConversationMode) => {
+    const timestamp = new Date().toISOString()
+    setActiveLiveThread({
+      threadId: crypto.randomUUID(),
+      mode,
+      title: mode === 'eureka' ? 'New Eureka' : mode === 'dream' ? 'New Dream' : 'New Conversation',
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      sourceDevice: 'workbench',
+      archived: false,
+      messageCount: 0,
+      messages: [],
+    })
+    dispatch({ type: 'set-conversation-mode', value: mode })
+    setLiveError(null)
+  }, [])
+
+  const sendLiveMessage = useCallback(async (message: string, mode: ConversationMode) => {
+    if (transportMode !== 'relay' || pairing?.status !== 'paired') {
+      setLiveError('Pair this Workbench with the iPhone before talking with Nora.')
+      return
+    }
+    const threadId = activeLiveThread?.threadId ?? crypto.randomUUID()
+    setLiveSending(true)
+    try {
+      const transport = relayTransport()
+      await transport.sendChat({
+        threadId,
+        message,
+        mode,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+      })
+      const [thread, threads] = await Promise.all([
+        transport.getThread(threadId),
+        transport.listThreads(),
+      ])
+      setActiveLiveThread(thread)
+      setLiveThreads(threads)
+      setLiveError(null)
+    } catch (error) {
+      setLiveError(error instanceof Error ? error.message : 'Nora could not answer from the Workbench.')
+    } finally {
+      setLiveSending(false)
+    }
+  }, [activeLiveThread?.threadId, pairing?.status, relayTransport])
+
+  const correctLiveMemory = useCallback(async (correction: MemoryCorrection) => {
+    if (transportMode !== 'relay' || pairing?.status !== 'paired') return
+    try {
+      setLiveContextGraph(await relayTransport().correctContextGraph(correction))
+      setLiveError(null)
+    } catch (error) {
+      setLiveError(error instanceof Error ? error.message : 'The memory update could not be saved.')
+      throw error
+    }
+  }, [pairing?.status, relayTransport])
 
   useEffect(() => {
     const transport = transportRef.current
@@ -181,26 +335,42 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
   ])
 
   useEffect(() => {
-    if (transportMode !== 'relay' || pairing?.status !== 'waiting') return
+    if (transportMode !== 'relay' || !pairing) return
     const timer = window.setTimeout(async () => {
       try {
         const status = await transportRef.current.getPairingStatus(pairing.id)
         if (status.status === 'paired') {
-          setPairing({ ...pairing, status: 'paired', code: undefined })
+          const activePairing = { ...pairing, status: 'paired' as const, code: undefined }
+          setPairing(activePairing)
+          saveStoredPairing(activePairing)
           setConnectionError(null)
         } else if (status.status === 'expired' || status.status === 'revoked') {
           setPairing(null)
+          saveStoredPairing(null)
+          setLiveThreads([])
+          setActiveLiveThread(null)
+          setLiveContextGraph(null)
           setConnectionError(`The pairing was ${status.status}. Generate a new code.`)
-        } else {
+        } else if (pairing.status === 'waiting') {
           setPairing({ ...pairing })
         }
       } catch (error) {
         setConnectionError(error instanceof Error ? error.message : 'Pairing status could not be checked.')
         setPairing({ ...pairing })
       }
-    }, 2_500)
+    }, pairing.status === 'waiting' ? 2_500 : 30_000)
     return () => window.clearTimeout(timer)
   }, [pairing])
+
+  useEffect(() => {
+    if (transportMode !== 'relay' || pairing?.status !== 'paired') return
+    const initial = window.setTimeout(() => void refreshLiveData(), 0)
+    const timer = window.setInterval(() => void refreshLiveData(), 10_000)
+    return () => {
+      window.clearTimeout(initial)
+      window.clearInterval(timer)
+    }
+  }, [pairing?.status, refreshLiveData])
 
   useEffect(() => {
     const actionId = state.delivery.actionId
@@ -246,6 +416,7 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
   const pair = useCallback(async () => {
     setConnectionError(null)
     try {
+      saveStoredPairing(null)
       setPairing(await transportRef.current.pair())
     } catch (error) {
       setConnectionError(error instanceof Error ? error.message : 'Pairing could not be started.')
@@ -389,6 +560,19 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
         errorMessage: connectionError,
         pair,
       },
+      live: {
+        threads: liveThreads,
+        activeThread: activeLiveThread,
+        contextGraph: liveContextGraph,
+        loading: liveLoading,
+        sending: liveSending,
+        errorMessage: liveError,
+        refresh: refreshLiveData,
+        openThread: openLiveThread,
+        startThread: startLiveThread,
+        sendMessage: sendLiveMessage,
+        correctMemory: correctLiveMemory,
+      },
       mission: {
         send,
         retry,
@@ -404,14 +588,25 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
       addPhoto,
       cancel,
       connectionError,
+      correctLiveMemory,
+      activeLiveThread,
+      liveContextGraph,
+      liveError,
+      liveLoading,
+      liveSending,
+      liveThreads,
+      openLiveThread,
       pair,
       pairing,
       reset,
+      refreshLiveData,
       retry,
       send,
+      sendLiveMessage,
       simulateExpiry,
       simulateFailure,
       start,
+      startLiveThread,
       state,
     ],
   )

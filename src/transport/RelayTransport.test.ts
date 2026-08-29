@@ -142,4 +142,111 @@ describe('RelayTransport', () => {
     )
     await expect(unauthenticated.getActionStatus(actionId)).rejects.toThrow('did not return a token')
   })
+
+  it('restores a paired account and loads live threads, messages, and context', async () => {
+    const threadId = '33333333-3333-4333-8333-333333333333'
+    const liveThread = {
+      threadId,
+      mode: 'eureka',
+      title: 'Agent harness for well-being',
+      createdAt,
+      updatedAt: createdAt,
+      sourceDevice: 'watch',
+      archived: false,
+      messageCount: 1,
+    }
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(response({ ok: true, threads: [liveThread] }))
+      .mockResolvedValueOnce(response({
+        ok: true,
+        thread: {
+          ...liveThread,
+          messages: [{
+            messageId: '44444444-4444-4444-8444-444444444444',
+            threadId,
+            role: 'user',
+            text: 'I talked this out on my run.',
+            occurredAt: createdAt,
+            sourceDevice: 'watch',
+            modality: 'voice',
+            requestId: null,
+            modelUsed: null,
+            fallbackUsed: false,
+          }],
+        },
+      }))
+      .mockResolvedValueOnce(response({
+        ok: true,
+        graph: {
+          nodes: [{
+            id: 'about-me-root',
+            label: 'About Me',
+            detail: 'Account context',
+            category: 'user-fact',
+            confidence: 'confirmed',
+            evidenceIds: [],
+            position: { x: 0, y: 0 },
+          }],
+          edges: [],
+          evidence: [],
+        },
+      }))
+    const transport = new RelayTransport(
+      'https://relay.example.test',
+      async () => 'browser-token',
+      fetcher,
+      pairingId,
+    )
+
+    expect((await transport.listThreads())[0].title).toBe(liveThread.title)
+    expect((await transport.getThread(threadId)).messages?.[0].modality).toBe('voice')
+    expect((await transport.getContextGraph()).nodes[0].label).toBe('About Me')
+    expect(fetcher.mock.calls[0][0]).toContain(`/workbench/threads?pairingId=${pairingId}`)
+  })
+
+  it('continues a conversation through the live Nora endpoint', async () => {
+    const threadId = '33333333-3333-4333-8333-333333333333'
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(response({
+      ok: true,
+      thread: {
+        threadId,
+        mode: 'eureka',
+        title: 'Agent harness for well-being',
+        createdAt,
+        updatedAt: createdAt,
+        sourceDevice: 'workbench',
+        archived: false,
+        messageCount: 2,
+      },
+      userMessage: { messageId: crypto.randomUUID() },
+      noraMessage: { messageId: crypto.randomUUID(), text: 'Let us sharpen it.' },
+    }))
+    const transport = new RelayTransport(
+      'https://relay.example.test',
+      async () => 'browser-token',
+      fetcher,
+      pairingId,
+    )
+
+    const result = await transport.sendChat({
+      threadId,
+      message: 'Continue this with me.',
+      mode: 'eureka',
+      timezone: 'America/Los_Angeles',
+    })
+
+    expect(result.noraMessage?.text).toBe('Let us sharpen it.')
+    const [, request] = fetcher.mock.calls[0]
+    const body = JSON.parse(String(request?.body)) as Record<string, unknown>
+    expect(Object.keys(body).sort()).toEqual([
+      'message',
+      'messageId',
+      'mode',
+      'pairingId',
+      'protocolVersion',
+      'threadId',
+      'timezone',
+    ])
+    expect(body.pairingId).toBe(pairingId)
+  })
 })

@@ -1,6 +1,14 @@
 import { createContext, useContext } from 'react'
 import type { Dispatch } from 'react'
-import type { DemoProfile, PairingSession, WorkbenchState } from '../domain/types'
+import type {
+  ConversationMode,
+  DemoProfile,
+  LiveContextGraph,
+  LiveConversationThread,
+  MemoryCorrection,
+  PairingSession,
+  WorkbenchState,
+} from '../domain/types'
 import type { WorkbenchAction } from './reducer'
 
 export interface WorkbenchContextValue {
@@ -12,6 +20,19 @@ export interface WorkbenchContextValue {
     pairing: PairingSession | null
     errorMessage: string | null
     pair: () => Promise<void>
+  }
+  live: {
+    threads: LiveConversationThread[]
+    activeThread: LiveConversationThread | null
+    contextGraph: LiveContextGraph | null
+    loading: boolean
+    sending: boolean
+    errorMessage: string | null
+    refresh: () => Promise<void>
+    openThread: (threadId: string) => Promise<void>
+    startThread: (mode: ConversationMode) => void
+    sendMessage: (message: string, mode: ConversationMode) => Promise<void>
+    correctMemory: (correction: MemoryCorrection) => Promise<void>
   }
   mission: {
     send: () => Promise<void>

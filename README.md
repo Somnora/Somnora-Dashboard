@@ -1,10 +1,10 @@
 # Somnora Desktop Workbench
 
-Somnora Desktop Workbench is a privacy-safe proof of concept for an agentic web dashboard that extends the existing Somnora iPhone and Apple Watch experience. Nora notices a seeded Eureka dry spell, explains the memory evidence behind a real-world creative invitation, waits for consent, and demonstrates a handoff through iPhone to Watch before closing the loop in a private Field Note.
+Somnora Desktop Workbench is a cross-device companion for Somnora on iPhone and Apple Watch. A paired account can load real Dream, Daily, and Eureka history, continue those conversations with Nora, inspect an account-backed About Me graph, and hand consented activities to iPhone and Watch.
 
 This repository contains the new hackathon Workbench. The existing Somnora iPhone and Watch apps predate the submission period. The Workbench and the new cross-device ecosystem coordination were started on 08-27-26.
 
-## Run the recordable demo
+## Run the live Workbench
 
 Requirements: Node.js 24 or another runtime supported by Vite 8.
 
@@ -13,9 +13,11 @@ npm ci
 npm run demo
 ```
 
-Open `http://127.0.0.1:4173`. No account, device, network request, or environment file is required for the deterministic demo.
+Copy `.env.example` to `.env.local` and add the public Firebase web configuration for the Somnora Firebase project. Open `http://127.0.0.1:4173`, generate a six-digit code, and enter it in Somnora on iPhone. The browser keeps the revocable link for 30 days.
 
-Recommended demo path:
+The live path uses the same authenticated Somnora backend and Nora model stack as iPhone. Apple Watch remains connected through iPhone. It never talks directly to the browser.
+
+Recommended live product path:
 
 1. On Home, open **Why this** to reveal the evidence path in About Me.
 2. Return Home, accept **Three Beautiful Things**, then explicitly send the invitation.
@@ -26,13 +28,15 @@ Recommended demo path:
 7. Open Context Sources to show permission, freshness, failure, and retention boundaries. Keep the reliable recording seeded, or deliberately request one-time weather context.
 8. Open Activity Studio, apply current context, reduce time and energy, and show Nora selecting the One breath lines version of Six Line Story.
 9. Begin the story to demonstrate an explicitly started, temporary creative exercise, then close and clear it.
-10. Open Timeline, Conversations, Themes, and Analytics to show the wider ecosystem.
+10. Open Conversations, continue a Watch or iPhone thread with Nora, then open About Me to inspect live account context.
 11. Return Home and open the private burn exercise as the final visual beat.
 
-## What is working in this repository
+## What is working
 
-- A deterministic, privacy-safe 30-day profile for Dream, Daily, Eureka, themes, biometrics, and About Me.
-- A bounded, inspectable memory graph with confirmation, correction, and forgetting controls.
+- Secure six-digit linking between a browser session and the authenticated iPhone account, followed by a revocable 30-day device link.
+- Bidirectional, offline-first iPhone synchronization for Dream, Daily, and Eureka conversation history, including Watch voice provenance and Workbench continuations pulled back to the phone.
+- Live conversation continuation with Nora through the same backend model, RAG, memory, and safety path used by the phone.
+- A bounded, account-backed About Me graph with confirmation, correction, and forgetting controls.
 - A universal Context Timeline and a calm Action Desk that make source provenance, consent, route, progress, outcome, and memory boundaries inspectable.
 - A source-linked Growth workspace where the user can confirm, defer, or qualify then and now comparisons without points, streak pressure, disclosure rewards, or durable memory writes.
 - A capacity-aware Activity Studio across Discover, Connect, Create, Reflect, and Reset. It adapts variants to time, energy, movement, social bandwidth, weather, and privacy while separating interactive features, mobile continuity, and concept previews.
@@ -45,22 +49,21 @@ Recommended demo path:
 - A private Six Line Story exercise whose six lines stay in temporary component memory, receive no grading, and clear when the exercise closes.
 - Responsive Somnora image backgrounds, liquid-glass surfaces, keyboard navigation, modal focus containment, and reduced-motion behavior.
 
-## Honest demo boundary
+## Honest product boundary
 
-The default Workbench does **not** synchronize a real Somnora account, contact physical devices, upload photographs, ingest HealthKit records, or make a connector network request. All dashboard profile data and default device-delivery states are deterministic demo fixtures and are visibly disclosed in the interface. Live weather is an optional one-time browser request. Calendar parsing is local. Event options are fictitious demo fixtures, not live listings.
+Relay mode synchronizes conversation records and a bounded projection of Nora memory. It does not upload photographs, HealthKit records, burn text, or model credentials. Live weather remains an optional one-time browser request. Calendar parsing is local. Event options remain clearly labeled fixtures until a real event provider is connected.
 
-An optional authenticated `RelayTransport`, a scoped Cloud Run relay, and the corresponding iPhone and Apple Watch slice are implemented and tested on isolated branches. They are not deployed. The verified architecture preserves the boundary **Apple Watch to iPhone to authenticated shared backend to Workbench**. There is no direct Watch-to-dashboard channel. The relay carries only a versioned action identifier, bounded prompt, status, and progress count, never model credentials, raw health data, journal evidence, burn text, or photo bytes.
+The architecture preserves the boundary **Apple Watch to iPhone to authenticated shared backend to Workbench**. There is no direct Watch-to-dashboard channel. Activity handoff still carries only a versioned action identifier, bounded prompt, status, and progress count.
 
-## Optional relay mode
+## Seeded development mode
 
-Keep `VITE_TRANSPORT=demo` for the reliable recorded path. Relay mode requires an explicitly authorized backend source deployment, exact CORS origin configuration, Firebase Anonymous Authentication, and the public Firebase web configuration listed in `.env.example`.
+Use seeded mode only for deterministic UI development and automated visual fixtures:
 
 ```bash
-VITE_TRANSPORT=relay
-VITE_WORKBENCH_API_ORIGIN=https://your-authorized-relay-origin.example
+VITE_TRANSPORT=demo
 ```
 
-With the remaining Firebase web values configured, the Workbench generates a six-digit single-use code. The iPhone claims that code with its own Firebase identity and remains the only bridge to Apple Watch. Do not present relay mode as live until the deployed origin, real iPhone, and real Apple Watch path have been freshly verified.
+Seeded mode must remain visibly disclosed and must not be used for the product demo recording.
 
 ## Verification
 

@@ -1,5 +1,10 @@
 import { validateActionSnapshot } from '../domain/actionRuntime'
 import type {
+  ConversationMode,
+  LiveContextGraph,
+  LiveConversationMessage,
+  LiveConversationThread,
+  MemoryCorrection,
   NoraActionDispatch,
   NoraActionSnapshot,
   NoraActionStatus,
@@ -11,6 +16,7 @@ import { getWorkbenchIDToken } from './firebaseAuth'
 
 const protocolVersion = 1
 const maximumResponseBytes = 16 * 1024
+const maximumAccountResponseBytes = 1024 * 1024
 
 type TokenProvider = () => Promise<string>
 type Fetcher = typeof fetch
@@ -42,6 +48,28 @@ interface ActionEnvelope {
     updatedAt?: string
     expiresAt: string
   }
+}
+
+interface ThreadsEnvelope {
+  ok: boolean
+  threads?: LiveConversationThread[]
+}
+
+interface ThreadEnvelope {
+  ok: boolean
+  thread?: LiveConversationThread
+}
+
+interface ChatEnvelope {
+  ok: boolean
+  thread?: LiveConversationThread
+  userMessage?: LiveConversationMessage
+  noraMessage?: LiveConversationMessage
+}
+
+interface ContextGraphEnvelope {
+  ok: boolean
+  graph?: LiveContextGraph
 }
 
 const statusMap: Record<string, NoraActionStatus> = {
@@ -109,13 +137,17 @@ export class RelayTransport implements WorkbenchTransport {
   constructor(
     private readonly baseURL: string,
     private readonly tokenProvider: TokenProvider = getWorkbenchIDToken,
-    private readonly fetcher: Fetcher = fetch,
+    private readonly fetcher: Fetcher = globalThis.fetch.bind(globalThis),
+    restoredPairingId?: string,
   ) {
     const normalized = baseURL.trim().replace(/\/$/, '')
     if (!/^https?:\/\/[^/]+(?::\d+)?$/i.test(normalized)) {
       throw new Error('Relay mode requires a valid VITE_WORKBENCH_API_ORIGIN.')
     }
     this.baseURL = normalized
+    if (restoredPairingId) {
+      this.pairingId = requireUUID(restoredPairingId, 'Pairing ID')
+    }
   }
 
   async pair(): Promise<PairingSession> {
@@ -217,6 +249,96 @@ export class RelayTransport implements WorkbenchTransport {
     return dispatch ? this.acceptSnapshot(action, dispatch) : action
   }
 
+  async listThreads(): Promise<LiveConversationThread[]> {
+    const pairingId = this.requirePairing()
+    const envelope = await this.request<ThreadsEnvelope>(
+      `/workbench/threads?pairingId=${encodeURIComponent(pairingId)}`,
+      {},
+      maximumAccountResponseBytes,
+    )
+    if (envelope.ok !== true || !Array.isArray(envelope.threads)) {
+      throw new Error('The relay returned an invalid conversation list.')
+    }
+    return envelope.threads.filter((thread) => ['dream', 'daily', 'eureka'].includes(thread.mode))
+  }
+
+  async getThread(threadId: string): Promise<LiveConversationThread> {
+    const pairingId = this.requirePairing()
+    const id = requireUUID(threadId, 'Thread ID')
+    const envelope = await this.request<ThreadEnvelope>(
+      `/workbench/threads/${id}/messages?pairingId=${encodeURIComponent(pairingId)}`,
+      {},
+      maximumAccountResponseBytes,
+    )
+    if (envelope.ok !== true || !envelope.thread || !Array.isArray(envelope.thread.messages)) {
+      throw new Error('The relay returned an invalid conversation.')
+    }
+    return envelope.thread
+  }
+
+  async sendChat(input: {
+    threadId: string
+    message: string
+    mode: ConversationMode
+    timezone: string
+  }): Promise<ChatEnvelope> {
+    const pairingId = this.requirePairing()
+    const message = input.message.trim()
+    if (!message || message.length > 8_000) {
+      throw new Error('Messages must be between 1 and 8,000 characters.')
+    }
+    const envelope = await this.request<ChatEnvelope>('/workbench/chat', {
+      method: 'POST',
+      body: JSON.stringify({
+        pairingId,
+        threadId: requireUUID(input.threadId, 'Thread ID'),
+        messageId: crypto.randomUUID(),
+        message,
+        mode: input.mode,
+        timezone: input.timezone,
+        protocolVersion,
+      }),
+    }, maximumAccountResponseBytes)
+    if (
+      envelope.ok !== true ||
+      !envelope.thread ||
+      !envelope.userMessage ||
+      !envelope.noraMessage
+    ) {
+      throw new Error('The relay returned an invalid Nora response.')
+    }
+    return envelope
+  }
+
+  async getContextGraph(): Promise<LiveContextGraph> {
+    const pairingId = this.requirePairing()
+    const envelope = await this.request<ContextGraphEnvelope>(
+      `/workbench/context-graph?pairingId=${encodeURIComponent(pairingId)}`,
+      {},
+      maximumAccountResponseBytes,
+    )
+    if (envelope.ok !== true || !envelope.graph) {
+      throw new Error('The relay returned an invalid context graph.')
+    }
+    return envelope.graph
+  }
+
+  async correctContextGraph(correction: MemoryCorrection): Promise<LiveContextGraph> {
+    const pairingId = this.requirePairing()
+    const envelope = await this.request<ContextGraphEnvelope>(
+      '/workbench/context-graph/corrections',
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ pairingId, ...correction }),
+      },
+      maximumAccountResponseBytes,
+    )
+    if (envelope.ok !== true || !envelope.graph) {
+      throw new Error('The relay could not apply the memory correction.')
+    }
+    return envelope.graph
+  }
+
   private acceptSnapshot(
     candidate: NoraActionSnapshot,
     dispatch: NoraActionDispatch,
@@ -235,7 +357,11 @@ export class RelayTransport implements WorkbenchTransport {
     return this.pairingId
   }
 
-  private async request<Response>(path: string, init: RequestInit = {}): Promise<Response> {
+  private async request<Response>(
+    path: string,
+    init: RequestInit = {},
+    responseLimit = maximumResponseBytes,
+  ): Promise<Response> {
     const token = await this.tokenProvider()
     if (!token.trim()) throw new Error('Firebase authentication did not return a token.')
     const response = await this.fetcher(`${this.baseURL}${path}`, {
@@ -249,7 +375,7 @@ export class RelayTransport implements WorkbenchTransport {
       },
     })
     const text = await response.text()
-    if (new TextEncoder().encode(text).length > maximumResponseBytes) {
+    if (new TextEncoder().encode(text).length > responseLimit) {
       throw new Error('The relay response exceeded the safety limit.')
     }
     let body: unknown

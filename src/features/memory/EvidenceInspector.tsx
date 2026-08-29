@@ -10,19 +10,22 @@ const categoryCopy = {
 } as const
 
 export function EvidenceInspector() {
-  const { state, profile, dispatch } = useWorkbench()
+  const { state, profile, dispatch, connection, live } = useWorkbench()
   const [editing, setEditing] = useState(false)
   const [correction, setCorrection] = useState('')
   const [confirmForget, setConfirmForget] = useState(false)
-  const node = profile.memoryNodes.find(
+  const liveGraph = connection.mode === 'relay' ? live.contextGraph : null
+  const memoryNodes = liveGraph?.nodes ?? profile.memoryNodes
+  const memoryEvidence = liveGraph?.evidence ?? profile.evidence
+  const node = memoryNodes.find(
     (item) => item.id === state.selectedMemoryNodeId,
   )
   const evidence = useMemo(
     () =>
       node
-        ? profile.evidence.filter((item) => node.evidenceIds.includes(item.id))
+        ? memoryEvidence.filter((item) => node.evidenceIds.includes(item.id))
         : [],
-    [node, profile.evidence],
+    [memoryEvidence, node],
   )
 
   if (!node) {
@@ -32,7 +35,7 @@ export function EvidenceInspector() {
         <h2>Select a memory.</h2>
         <p>
           Open any node to see where it came from, how certain it is, and how to
-          correct or forget it for this session.
+          correct or forget it from the active account view.
         </p>
       </GlassPanel>
     )
@@ -97,19 +100,18 @@ export function EvidenceInspector() {
               className="primary-button"
               disabled={!correction.trim()}
               onClick={() => {
-                dispatch({
-                  type: 'correct-memory',
-                  correction: {
-                    nodeId: node.id,
-                    kind: 'corrected',
-                    note: correction.trim(),
-                  },
-                })
+                const update = {
+                  nodeId: node.id,
+                  kind: 'corrected' as const,
+                  note: correction.trim(),
+                }
+                if (connection.mode === 'relay') void live.correctMemory(update)
+                else dispatch({ type: 'correct-memory', correction: update })
                 setEditing(false)
               }}
               type="button"
             >
-              Apply for this session
+              {connection.mode === 'relay' ? 'Save correction' : 'Apply for this session'}
             </button>
             <button
               className="text-button"
@@ -123,19 +125,22 @@ export function EvidenceInspector() {
       ) : null}
       {confirmForget ? (
         <div className="forget-confirmation" role="alert">
-          <p>Remove this memory and its connections from the current demo session?</p>
+          <p>
+            {connection.mode === 'relay'
+              ? 'Remove this memory and its connections from the account graph?'
+              : 'Remove this memory and its connections from the current demo session?'}
+          </p>
           <button
             className="secondary-button"
             onClick={() => {
-              dispatch({
-                type: 'correct-memory',
-                correction: { nodeId: node.id, kind: 'forgotten' },
-              })
+              const update = { nodeId: node.id, kind: 'forgotten' as const }
+              if (connection.mode === 'relay') void live.correctMemory(update)
+              else dispatch({ type: 'correct-memory', correction: update })
               dispatch({ type: 'select-memory-node', nodeId: null })
             }}
             type="button"
           >
-            Forget for this session
+            {connection.mode === 'relay' ? 'Forget from graph' : 'Forget for this session'}
           </button>
           <button
             className="text-button"
@@ -149,12 +154,11 @@ export function EvidenceInspector() {
         <div className="memory-actions">
           <button
             className="secondary-button"
-            onClick={() =>
-              dispatch({
-                type: 'correct-memory',
-                correction: { nodeId: node.id, kind: 'confirmed' },
-              })
-            }
+            onClick={() => {
+              const update = { nodeId: node.id, kind: 'confirmed' as const }
+              if (connection.mode === 'relay') void live.correctMemory(update)
+              else dispatch({ type: 'correct-memory', correction: update })
+            }}
             type="button"
           >
             That's right

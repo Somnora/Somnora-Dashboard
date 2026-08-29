@@ -298,6 +298,39 @@ export interface PairingStatus {
   simulated: boolean
 }
 
+export type ConversationSource = 'iphone' | 'watch' | 'workbench'
+
+export interface LiveConversationMessage {
+  messageId: string
+  threadId: string
+  role: 'user' | 'nora'
+  text: string
+  occurredAt: string
+  sourceDevice: ConversationSource
+  modality: 'text' | 'voice'
+  requestId: string | null
+  modelUsed: string | null
+  fallbackUsed: boolean
+}
+
+export interface LiveConversationThread {
+  threadId: string
+  mode: ConversationMode
+  title: string
+  createdAt: string
+  updatedAt: string
+  sourceDevice: ConversationSource
+  archived: boolean
+  messageCount: number
+  messages?: LiveConversationMessage[]
+}
+
+export interface LiveContextGraph {
+  nodes: MemoryNode[]
+  edges: MemoryEdge[]
+  evidence: MemoryEvidence[]
+}
+
 export interface DeliveryState {
   status: DeliveryStatus
   actionId?: string
