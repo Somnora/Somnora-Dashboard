@@ -4,7 +4,9 @@ test('conversation modes switch and preserve the selected mode in session', asyn
   await page.goto('/')
   await page.getByRole('button', { name: 'Conversations' }).click()
   await page.getByRole('tab', { name: 'Dream' }).click()
-  await expect(page.getByText(/bright windows in a building/)).toBeVisible()
+  await expect(
+    page.getByText('I kept finding bright windows in a building I thought was empty.'),
+  ).toBeVisible()
 
   await page.getByRole('button', { name: 'Themes' }).click()
   await page.getByRole('button', { name: 'Conversations' }).click()
@@ -33,4 +35,26 @@ test('analytics exposes units and a seeded-data boundary', async ({ page }) => {
   await expect(page.getByText(/No HealthKit or live account data/)).toBeVisible()
   await expect(page.getByRole('img', { name: /sleep duration over seven days/ })).toBeVisible()
   await expect(page.getByRole('img', { name: /HRV over seven days/ })).toBeVisible()
+})
+
+test('timeline connects ecosystem sources and keeps reasoning inspectable', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Timeline' }).click()
+
+  await expect(page.getByRole('heading', { name: 'Context Timeline' })).toBeVisible()
+  await expect(page.getByText('Your days make more sense together.')).toBeVisible()
+  await expect(page.getByText(/roadmap integrations, not active demo data/)).toBeVisible()
+
+  await page.getByRole('button', { name: 'Dream', exact: true }).click()
+  await expect(page.getByText('Dream reflection')).toBeVisible()
+  await expect(page.getByText('Daily reflection')).not.toBeVisible()
+
+  await page.getByRole('button', { name: /Dream reflection/ }).click()
+  await expect(page.getByText('Confirmed by you or directly recorded')).toBeVisible()
+  await expect(page.locator('.timeline-evidence blockquote')).toContainText(
+    /bright windows in a building/,
+  )
+  await page.getByRole('button', { name: 'Open source view' }).click()
+  await expect(page.getByRole('heading', { name: 'Conversations' })).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Dream' })).toHaveAttribute('aria-selected', 'true')
 })

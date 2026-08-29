@@ -1,6 +1,7 @@
 export type Destination =
   | 'home'
   | 'conversations'
+  | 'timeline'
   | 'about-me'
   | 'themes'
   | 'analytics'
@@ -9,6 +10,43 @@ export type ConversationMode = 'dream' | 'daily' | 'eureka'
 export type AutonomyLevel = 'quiet' | 'balanced' | 'active'
 export type StretchLevel = 'gentle' | 'open' | 'bold'
 export type EnergyLevel = 'low' | 'medium' | 'high'
+
+export type ContextDomain =
+  | 'dream'
+  | 'daily'
+  | 'eureka'
+  | 'sleep'
+  | 'fitness'
+  | 'nutrition'
+  | 'activity'
+  | 'nora'
+
+export type ContextEventKind =
+  | 'capture'
+  | 'response'
+  | 'signal'
+  | 'interpretation'
+  | 'invitation'
+  | 'outcome'
+  | 'growth'
+  | 'correction'
+
+export interface ContextTimelineEvent {
+  id: string
+  occurredAt: string
+  domain: ContextDomain
+  kind: ContextEventKind
+  actor: 'user' | 'nora' | 'device' | 'system'
+  confidence: 'confirmed' | 'observed' | 'tentative'
+  title: string
+  summary: string
+  sourceLabel: string
+  evidenceIds: string[]
+  tags: string[]
+  privacy: 'private-profile' | 'device-context' | 'session-only'
+  relatedDestination?: Destination
+  relatedConversationMode?: ConversationMode
+}
 
 export type MemoryCategory =
   | 'user-fact'

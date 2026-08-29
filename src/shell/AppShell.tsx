@@ -11,6 +11,7 @@ const destinationCopy: Record<
 > = {
   home: { eyebrow: 'Living Nora', title: 'Good evening, Jules', background: 'eureka' },
   conversations: { eyebrow: 'Your three threads', title: 'Conversations', background: 'dream' },
+  timeline: { eyebrow: 'Across your ecosystem', title: 'Context Timeline', background: 'mindful' },
   'about-me': { eyebrow: 'Inspectable memory', title: 'About Me', background: 'eureka' },
   themes: { eyebrow: 'Patterns across time', title: 'Themes', background: 'mindful' },
   analytics: { eyebrow: 'Body and rest', title: 'Analytics', background: 'insights' },

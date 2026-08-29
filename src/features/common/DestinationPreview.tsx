@@ -12,6 +12,12 @@ const copy: Record<
     body: 'Switch among the three Somnora modes without losing your place or the larger story around each entry.',
     detail: 'Seeded thread workspace arrives in the next view milestone.',
   },
+  timeline: {
+    label: 'Across your ecosystem',
+    title: 'Your context becomes one continuous story.',
+    body: 'Conversations, body signals, activities, Nora observations, and user-confirmed growth share one private chronology.',
+    detail: 'Each moment stays connected to its source and confidence boundary.',
+  },
   themes: {
     label: 'Recurring context',
     title: 'Patterns without turning you into a score.',

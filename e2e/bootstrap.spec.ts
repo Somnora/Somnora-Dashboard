@@ -24,6 +24,8 @@ test('primary destinations remain free of browser console warnings and errors', 
   await page.goto('/')
   await page.getByRole('button', { name: 'Conversations' }).click()
   await expect(page.getByRole('tab', { name: 'Dream' })).toBeVisible()
+  await page.getByRole('button', { name: 'Timeline' }).click()
+  await expect(page.getByText('Your days make more sense together.')).toBeVisible()
   await page.getByRole('button', { name: 'About Me' }).click()
   await expect(page.getByText('Select a memory.')).toBeVisible()
   await expect(page.getByRole('link', { name: 'React Flow attribution' })).toBeVisible()

@@ -25,6 +25,10 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Conversations' }))
     expect(await screen.findByRole('heading', { name: 'Conversations' })).toBeInTheDocument()
 
+    await user.click(screen.getByRole('button', { name: 'Timeline' }))
+    expect(await screen.findByRole('heading', { name: 'Context Timeline' })).toBeInTheDocument()
+    expect(await screen.findByText('Your days make more sense together.')).toBeInTheDocument()
+
     await user.click(screen.getByRole('button', { name: 'About Me' }))
     expect(await screen.findByRole('heading', { name: 'About Me' })).toBeInTheDocument()
 

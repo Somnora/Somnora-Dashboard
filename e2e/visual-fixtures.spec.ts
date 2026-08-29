@@ -39,6 +39,10 @@ test('@visual capture the recordable dashboard fixtures', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Windows and light/ })).toBeVisible()
   await capture(page, 'themes-1440')
 
+  await page.getByRole('button', { name: 'Timeline' }).click()
+  await expect(page.getByText('Your days make more sense together.')).toBeVisible()
+  await capture(page, 'timeline-1440')
+
   await page.getByRole('button', { name: 'Analytics' }).click()
   await expect(page.getByText('This is context, not a health score.')).toBeVisible()
   await capture(page, 'analytics-1440')

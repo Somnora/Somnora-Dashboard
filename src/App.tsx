@@ -24,6 +24,11 @@ const AnalyticsView = lazy(() =>
     default: module.AnalyticsView,
   })),
 )
+const ContextTimelineView = lazy(() =>
+  import('./features/timeline/ContextTimelineView').then((module) => ({
+    default: module.ContextTimelineView,
+  })),
+)
 
 function DestinationLoading() {
   return (
@@ -44,6 +49,8 @@ function ActiveDestination() {
       return <AboutMeView />
     case 'conversations':
       return <ConversationsView />
+    case 'timeline':
+      return <ContextTimelineView />
     case 'themes':
       return <ThemesView />
     case 'analytics':
