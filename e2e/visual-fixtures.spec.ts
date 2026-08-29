@@ -68,6 +68,13 @@ test('@visual capture the recordable dashboard fixtures', async ({ page }) => {
   await expect(page.getByText('This is context, not a health score.')).toBeVisible()
   await capture(page, 'analytics-1440')
 
+  await page.getByRole('button', { name: 'Context Sources', exact: true }).click()
+  await expect(page.getByText('External context should earn its way in.')).toBeVisible()
+  await capture(page, 'context-sources-1440')
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await capture(page, 'context-sources-1280')
+  await page.setViewportSize({ width: 1440, height: 900 })
+
   await page.getByRole('button', { name: 'Home', exact: true }).click()
   await page.getByRole('button', { name: 'Accept invitation' }).click()
   await expect(page.getByText('Consent recorded. No delivery yet.')).toBeVisible()

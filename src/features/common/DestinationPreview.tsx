@@ -30,6 +30,12 @@ const copy: Record<
     body: 'Time, energy, movement, social bandwidth, weather, and privacy determine which version Nora can offer.',
     detail: 'Browsing never starts an activity or grants Nora new authority.',
   },
+  connectors: {
+    label: 'Permissioned external context',
+    title: 'Every source should explain itself.',
+    body: 'Location, weather, calendar, and event context stay bounded by permission, freshness, failure, and purpose.',
+    detail: 'Fitness and Nutrition remain visibly disconnected until their adapters exist.',
+  },
   themes: {
     label: 'Recurring context',
     title: 'Patterns without turning you into a score.',

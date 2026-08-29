@@ -7,6 +7,7 @@ export type Destination =
   | 'about-me'
   | 'growth'
   | 'activities'
+  | 'connectors'
   | 'themes'
   | 'analytics'
 

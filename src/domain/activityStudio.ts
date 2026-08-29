@@ -466,8 +466,11 @@ const socialRank: Record<StudioSocial | StudioPreferences['socialBandwidth'], nu
   high: 2,
 }
 
-export function createStudioPreferences(profile: DemoProfile): StudioPreferences {
-  const maxMinutes = profile.context.availableMinutes <= 5
+export function createStudioPreferences(
+  profile: DemoProfile,
+  external?: Pick<StudioPreferences, 'maxMinutes' | 'weather'>,
+): StudioPreferences {
+  const profileMinutes = profile.context.availableMinutes <= 5
     ? 5
     : profile.context.availableMinutes <= 10
       ? 10
@@ -475,11 +478,11 @@ export function createStudioPreferences(profile: DemoProfile): StudioPreferences
         ? 20
         : 30
   return {
-    maxMinutes,
+    maxMinutes: external?.maxMinutes ?? profileMinutes,
     energy: profile.context.energy,
     movement: profile.context.mobility === 'limited' ? 'stationary' : 'open',
     socialBandwidth: profile.context.socialBandwidth,
-    weather: profile.context.weather,
+    weather: external?.weather ?? profile.context.weather,
     privacy: 'private-only',
   }
 }

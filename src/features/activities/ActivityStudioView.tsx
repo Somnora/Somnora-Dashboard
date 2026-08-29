@@ -12,6 +12,7 @@ import type {
   StudioPreferences,
 } from '../../domain/activityStudio'
 import type { EnergyLevel, InvitationFamily } from '../../domain/types'
+import { useExternalContext } from '../../connectors/externalContext'
 import { useWorkbench } from '../../state/workbenchContext'
 import { GlassPanel } from '../common/GlassPanel'
 import { BurnExercise } from '../reflect/BurnExercise'
@@ -34,7 +35,11 @@ function provenanceCopy(activity: StudioActivity): string {
 
 export function ActivityStudioView() {
   const { profile, dispatch } = useWorkbench()
-  const initialPreferences = useMemo(() => createStudioPreferences(profile), [profile])
+  const { normalized } = useExternalContext()
+  const initialPreferences = useMemo(() => createStudioPreferences(profile, {
+    maxMinutes: normalized.availableMinutes,
+    weather: normalized.weather,
+  }), [normalized.availableMinutes, normalized.weather, profile])
   const [preferences, setPreferences] = useState<StudioPreferences>(initialPreferences)
   const [family, setFamily] = useState<FamilyFilter>('all')
   const [fitFilter, setFitFilter] = useState<FitFilter>('fits-now')
@@ -89,10 +94,11 @@ export function ActivityStudioView() {
               and privacy before asking you to begin. Browsing never starts an activity.
             </p>
           </div>
-          <dl aria-label="Current seeded context">
+          <dl aria-label="Current permissioned context">
             <div><dt>Weather</dt><dd>{preferences.weather}</dd></div>
             <div><dt>Available</dt><dd>{preferences.maxMinutes} min</dd></div>
             <div><dt>Privacy</dt><dd>{preferences.privacy.replaceAll('-', ' ')}</dd></div>
+            <small>{normalized.weatherSource} · {normalized.calendarSource}</small>
           </dl>
         </GlassPanel>
 

@@ -364,3 +364,16 @@
 - Kept the existing private burn exercise available from both Home and Activity Studio without changing its text-clearing boundary or reduced-motion path.
 - Added `docs/activity-studio.md` as the product, matching, consent, and privacy reference.
 - Verified 70 unit and component tests, lint, type checking, production build, 31 functional browser tests, and one visual fixture path. Fresh Activity Studio frames were inspected at 1440 by 900 and 1280 by 800, plus the Six Line Story modal at 1440 by 900.
+
+## 2026-08-28 - Ecosystem expansion step 7
+
+### External World Connectors
+
+- Added Context Sources as a primary Workbench destination with six inspectable connector states: approximate location, weather, calendar availability, local events, Somnora Fitness, and Somnora Nutrition.
+- Added one-time browser location and current Open-Meteo weather behind an explicit user click. The Workbench discards coordinates after the request and keeps no location history.
+- Added local ICS parsing with a 256 KB limit. Only busy block count, busy minutes, and the largest useful gap for the next eight hours survive parsing. Titles, attendees, places, descriptions, and file contents are neither rendered nor stored.
+- Added three clearly fictitious event options with user-initiated Apple Maps links. No live event-provider claim is made.
+- Kept Fitness and Nutrition visibly disconnected and unavailable rather than offering controls that imply access.
+- Normalized weather and calendar availability into the existing Activity Studio matcher. The user must select Use current context, and this never starts an activity or broadens action authority.
+- Added `docs/external-context-connectors.md` as the permission, provenance, minimization, failure, and production-hardening reference.
+- Verified 76 unit and component tests, lint, type checking, production build, 33 functional browser tests, and one visual fixture path. Fresh Context Sources frames were inspected at 1440 by 900 and 1280 by 800.

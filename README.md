@@ -23,10 +23,11 @@ Recommended demo path:
 4. Open Consent Console to show domain-specific Observe, Suggest, and Prepare boundaries with consequential actions locked to Ask every time.
 5. Open Action Desk to show the difference between what Nora noticed, what she proposed, and what you authorized.
 6. Open Growth to compare a sustained boundary, returned curiosity, and user-chosen activities without a score.
-7. Open Activity Studio, reduce time and energy, and show Nora selecting the One breath lines version of Six Line Story.
-8. Begin the story to demonstrate an explicitly started, temporary creative exercise, then close and clear it.
-9. Open Timeline, Conversations, Themes, and Analytics to show the wider ecosystem.
-10. Return Home and open the private burn exercise as the final visual beat.
+7. Open Context Sources to show permission, freshness, failure, and retention boundaries. Keep the reliable recording seeded, or deliberately request one-time weather context.
+8. Open Activity Studio, apply current context, reduce time and energy, and show Nora selecting the One breath lines version of Six Line Story.
+9. Begin the story to demonstrate an explicitly started, temporary creative exercise, then close and clear it.
+10. Open Timeline, Conversations, Themes, and Analytics to show the wider ecosystem.
+11. Return Home and open the private burn exercise as the final visual beat.
 
 ## What is working in this repository
 
@@ -35,6 +36,7 @@ Recommended demo path:
 - A universal Context Timeline and a calm Action Desk that make source provenance, consent, route, progress, outcome, and memory boundaries inspectable.
 - A source-linked Growth workspace where the user can confirm, defer, or qualify then and now comparisons without points, streak pressure, disclosure rewards, or durable memory writes.
 - A capacity-aware Activity Studio across Discover, Connect, Create, Reflect, and Reset. It adapts variants to time, energy, movement, social bandwidth, weather, and privacy while separating interactive features, mobile continuity, and concept previews.
+- A permissioned Context Sources workspace with one-time browser location for current Open-Meteo weather, local-only ICS availability summaries, privacy-safe seeded event options, and explicit disconnected Fitness and Nutrition adapters.
 - A Consent and Autonomy Console with enforced per-domain Off, Observe, Suggest, and Prepare limits. Fitness and Nutrition remain visibly disconnected future adapters.
 - A generalized Nora action runtime with typed contracts for Three Beautiful Things, Breathing Reset, Six Line Story, and Tiny Detour. Only Three Beautiful Things currently has a live relay adapter.
 - A complete offline `DemoTransport` state machine labeled as simulated, including consent, iPhone delivery, Watch delivery, acknowledgement, progress, failure, retry, cancellation, expiry, and refresh recovery.
@@ -45,7 +47,7 @@ Recommended demo path:
 
 ## Honest demo boundary
 
-The default Workbench does **not** synchronize a real Somnora account, contact physical devices, upload photographs, or ingest HealthKit records. All dashboard profile data and default device-delivery states are deterministic demo fixtures and are visibly disclosed in the interface.
+The default Workbench does **not** synchronize a real Somnora account, contact physical devices, upload photographs, ingest HealthKit records, or make a connector network request. All dashboard profile data and default device-delivery states are deterministic demo fixtures and are visibly disclosed in the interface. Live weather is an optional one-time browser request. Calendar parsing is local. Event options are fictitious demo fixtures, not live listings.
 
 An optional authenticated `RelayTransport`, a scoped Cloud Run relay, and the corresponding iPhone and Apple Watch slice are implemented and tested on isolated branches. They are not deployed. The verified architecture preserves the boundary **Apple Watch to iPhone to authenticated shared backend to Workbench**. There is no direct Watch-to-dashboard channel. The relay carries only a versioned action identifier, bounded prompt, status, and progress count, never model credentials, raw health data, journal evidence, burn text, or photo bytes.
 

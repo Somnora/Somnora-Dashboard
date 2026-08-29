@@ -12,7 +12,7 @@ The Studio is a primary Workbench destination with five families:
 - Reflect works privately with what is already present.
 - Reset lowers demand and returns attention to the moment.
 
-Each activity can offer alternate versions. The deterministic matcher considers available time, energy, movement, social bandwidth, seeded weather, and privacy. If the first version does not fit but another does, the Studio selects the lower-friction alternative and labels that adjustment. If no version fits every boundary, the activity is held and has no start control.
+Each activity can offer alternate versions. The deterministic matcher considers available time, energy, movement, social bandwidth, normalized weather, and privacy. If the first version does not fit but another does, the Studio selects the lower-friction alternative and labels that adjustment. If no version fits every boundary, the activity is held and has no start control.
 
 ## Consent boundary
 
@@ -39,6 +39,6 @@ Private Release opens the existing burn exercise. Its text remains temporary and
 
 ## Current data boundary
 
-The default context is derived from the privacy-safe seeded profile. Weather is not fetched from a live service. Activity Studio does not claim live Calendar, Maps, local events, Fitness, or Nutrition access.
+The default context is derived from the privacy-safe seeded profile and makes no network request. Context Sources can replace seeded weather after a one-time browser location request and can summarize a user-selected ICS file locally. Activity Studio applies the normalized weather and availability window only after the user selects **Use current context**.
 
-External World Connectors are the next roadmap step. Each future connector must expose permission state, source, freshness, failure state, and the reason its data affects an invitation.
+Event options remain fictitious demo fixtures. Fitness and Nutrition remain disconnected. See `external-context-connectors.md` for the complete permission, source, freshness, failure, and retention boundaries.

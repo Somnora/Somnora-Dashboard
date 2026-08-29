@@ -40,6 +40,9 @@ The wider dashboard shows how Somnora can become an ecosystem rather than a coll
 - Redis-backed rate limiting with the proxy's existing fallback behavior
 - SwiftUI
 - WatchConnectivity
+- Browser Geolocation API
+- Open-Meteo forecast API
+- Local ICS calendar parsing
 - XCTest, Vitest, React Testing Library, and Playwright
 - Codex guided build workflow
 
@@ -55,6 +58,7 @@ The wider dashboard shows how Somnora can become an ecosystem rather than a coll
 - Growth workspace with source-linked then and now comparisons and user-owned review
 - Generalized Nora action runtime with typed consent, route, progress, expiry, and outcome contracts
 - Capacity-aware Activity Studio with honest interactive, continuity, and concept states
+- Permissioned Context Sources with one-time weather, local calendar availability, seeded events, and disconnected future adapters
 - Private Six Line Story and burn exercises with temporary text boundaries
 - Deterministic cross-device demo transport and private Field Note
 - Authenticated Workbench relay with role isolation, expiry, idempotency, rate limits, and safe logs
@@ -84,9 +88,10 @@ The Workbench reuses approved visual assets and extends existing device boundari
 9. Show Conversations, Themes, and Analytics quickly to establish the wider ecosystem.
 10. Open Consent Console and show that each domain has a maximum Observe, Suggest, or Prepare boundary while consequential actions stay Ask every time.
 11. Open Action Desk and show the separation between what Nora noticed, what she proposed, and what the user authorized.
-12. Open Activity Studio and reduce available time and energy so Nora adapts Six Line Story to One breath lines.
-13. Begin the private exercise, point out that it starts only after the click and stores no lines, then close and clear it.
-14. End with the private burn interaction as the final visual beat.
+12. Open Context Sources and show that every outside signal exposes source, freshness, permission, failure, reason, and retention boundaries. Keep the reliable take seeded, or deliberately request one-time weather context.
+13. Open Activity Studio, apply current context, and reduce available time and energy so Nora adapts Six Line Story to One breath lines.
+14. Begin the private exercise, point out that it starts only after the click and stores no lines, then close and clear it.
+15. End with the private burn interaction as the final visual beat.
 
 ## Screenshot and capture inventory
 
@@ -100,6 +105,8 @@ The Workbench reuses approved visual assets and extends existing device boundari
 - `screenshots/local/activity-studio-1440.png`
 - `screenshots/local/activity-studio-1280.png`
 - `screenshots/local/six-line-story-1440.png`
+- `screenshots/local/context-sources-1440.png`
+- `screenshots/local/context-sources-1280.png`
 - `screenshots/local/action-desk-1440.png`
 - `screenshots/local/consent-console-1440.png`
 - `screenshots/local/consent-console-1280.png`
@@ -126,11 +133,11 @@ The fresh iPhone CI launch with a placeholder Firebase configuration did not pro
 
 - TypeScript type check passed.
 - ESLint passed.
-- 70 Vitest unit and component tests passed.
+- 76 Vitest unit and component tests passed.
 - Production build passed.
-- 31 Playwright functional browser tests passed.
+- 33 Playwright functional browser tests passed.
 - One Playwright visual fixture suite passed and regenerated all target frames.
-- Home, focused About Me, acknowledged delivery, completed Field Note, Action Desk, Consent Console, Activity Studio, and Six Line Story frames were visually inspected at the final code state.
+- Home, focused About Me, acknowledged delivery, completed Field Note, Action Desk, Consent Console, Growth, Activity Studio, Context Sources, and Six Line Story frames were visually inspected at the final code state.
 
 ### Backend relay
 
@@ -163,6 +170,8 @@ The fresh iPhone CI launch with a placeholder Firebase configuration did not pro
 - No real Somnora account synchronization is included.
 - Photo bytes remain on iPhone. The Workbench Field Note uses bundled privacy-safe images.
 - HealthKit and detailed biometric records are not transferred to the web.
+- Current weather requires a deliberate one-time browser location request. Calendar import is local and account synchronization is not implemented.
+- Local event options are fictitious demo fixtures. Live event discovery, Fitness, and Nutrition connectors are not implemented.
 - Background push delivery is deferred. The iPhone relay polls only while foregrounded.
 - Browser and iPhone use separately authenticated Firebase principals instead of full Sign in with Apple account linking.
 - The Workbench repository currently has no Git remote. Publish it and add the final repository URL before submission.

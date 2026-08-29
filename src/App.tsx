@@ -3,6 +3,7 @@ import { HomeView } from './features/home/HomeView'
 import { AppShell } from './shell/AppShell'
 import { WorkbenchProvider } from './state/WorkbenchProvider'
 import { useWorkbench } from './state/workbenchContext'
+import { ExternalContextProvider } from './connectors/externalContext'
 
 const ConversationsView = lazy(() =>
   import('./features/conversations/ConversationsView').then((module) => ({
@@ -49,6 +50,11 @@ const ContextTimelineView = lazy(() =>
     default: module.ContextTimelineView,
   })),
 )
+const ConnectorHubView = lazy(() =>
+  import('./features/connectors/ConnectorHubView').then((module) => ({
+    default: module.ConnectorHubView,
+  })),
+)
 
 function DestinationLoading() {
   return (
@@ -81,6 +87,8 @@ function ActiveDestination() {
       return <GrowthView />
     case 'activities':
       return <ActivityStudioView />
+    case 'connectors':
+      return <ConnectorHubView />
     case 'analytics':
       return <AnalyticsView />
   }
@@ -88,12 +96,14 @@ function ActiveDestination() {
 
 export function App() {
   return (
-    <WorkbenchProvider>
-      <AppShell>
-        <Suspense fallback={<DestinationLoading />}>
-          <ActiveDestination />
-        </Suspense>
-      </AppShell>
-    </WorkbenchProvider>
+    <ExternalContextProvider>
+      <WorkbenchProvider>
+        <AppShell>
+          <Suspense fallback={<DestinationLoading />}>
+            <ActiveDestination />
+          </Suspense>
+        </AppShell>
+      </WorkbenchProvider>
+    </ExternalContextProvider>
   )
 }
