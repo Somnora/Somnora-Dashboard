@@ -16,7 +16,9 @@ const destinations: Array<{ id: Destination; label: string; mark: string }> = [
 ]
 
 export function NavigationRail() {
-  const { state, dispatch } = useWorkbench()
+  const { state, dispatch, connection } = useWorkbench()
+  const relayProfile = connection.mode === 'relay'
+  const relayPaired = connection.pairing?.status === 'paired'
 
   return (
     <nav className="navigation-rail" aria-label="Workbench destinations">
@@ -47,8 +49,13 @@ export function NavigationRail() {
           </button>
         ))}
       </div>
-      <div className="nav-profile" aria-label="Demo profile Jules">
-        J
+      <div
+        className="nav-profile"
+        aria-label={relayProfile
+          ? relayPaired ? 'Somnora account paired' : 'Somnora account not linked'
+          : 'Demo profile Jules'}
+      >
+        {relayProfile ? 'S' : 'J'}
       </div>
     </nav>
   )

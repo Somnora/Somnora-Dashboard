@@ -31,7 +31,7 @@ export interface WorkbenchContextValue {
     refresh: () => Promise<void>
     openThread: (threadId: string) => Promise<void>
     startThread: (mode: ConversationMode) => void
-    sendMessage: (message: string, mode: ConversationMode) => Promise<void>
+    sendMessage: (message: string, mode: ConversationMode) => Promise<boolean>
     correctMemory: (correction: MemoryCorrection) => Promise<void>
   }
   mission: {

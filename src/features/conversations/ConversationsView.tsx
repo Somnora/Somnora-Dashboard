@@ -49,12 +49,12 @@ export function ConversationsView() {
     const submit = async () => {
       const message = draft.trim()
       if (!message || live.sending) return
-      setDraft('')
-      await live.sendMessage(message, state.conversationMode)
+      const sent = await live.sendMessage(message, state.conversationMode)
+      if (sent) setDraft('')
     }
 
     return (
-      <div className="conversations-layout live-conversations-layout">
+      <div className={`conversations-layout live-conversations-layout${paired ? '' : ' is-unpaired'}`}>
         <GlassPanel className="live-thread-list">
           <div className="live-thread-list-heading">
             <div>

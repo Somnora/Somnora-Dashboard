@@ -189,7 +189,7 @@ export class RelayTransport implements WorkbenchTransport {
         : Date.parse(pairing.expiresAt) <= Date.now()
           ? 'expired'
           : 'waiting'
-    return { id, status, simulated: false }
+    return { id, status, simulated: false, expiresAt: pairing.expiresAt }
   }
 
   async sendAction(dispatch: NoraActionDispatch): Promise<NoraActionSnapshot> {

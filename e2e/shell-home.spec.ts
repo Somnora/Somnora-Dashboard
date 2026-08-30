@@ -3,6 +3,11 @@ import { expect, test } from '@playwright/test'
 test('primary navigation and modal close work by keyboard', async ({ page }) => {
   await page.goto('/')
 
+  const skip = page.getByRole('link', { name: 'Skip to workspace' })
+  await skip.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#main-content')).toBeFocused()
+
   const conversations = page.getByRole('button', { name: 'Conversations' })
   await conversations.focus()
   await page.keyboard.press('Enter')
@@ -246,6 +251,18 @@ test('changing destinations resets the workspace scroll position', async ({ page
       })),
     )
     .toEqual({ left: 0, top: 0 })
+})
+
+test('short desktop windows keep every destination reachable', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 600 })
+  await page.goto('/')
+
+  const navigation = page.getByRole('navigation', { name: 'Workbench destinations' })
+  const analytics = navigation.getByRole('button', { name: 'Analytics' })
+  await analytics.scrollIntoViewIfNeeded()
+  await analytics.click()
+
+  await expect(page.getByRole('heading', { name: 'Analytics' })).toBeVisible()
 })
 
 test('reduced motion removes long interface transitions', async ({ page }) => {

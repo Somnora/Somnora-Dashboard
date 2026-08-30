@@ -47,6 +47,7 @@ export class DemoTransport implements WorkbenchTransport {
       id: pairingId,
       status: pairingId === 'demo-pairing-local' ? 'paired' : 'expired',
       simulated: true,
+      expiresAt: '2099-08-28T00:00:00.000Z',
     }
   }
 

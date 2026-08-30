@@ -87,7 +87,9 @@ describe('RelayTransport', () => {
 
     const pairing = await transport.pair()
     expect(pairing.code).toBe('123456')
-    expect((await transport.getPairingStatus(pairing.id)).status).toBe('paired')
+    const status = await transport.getPairingStatus(pairing.id)
+    expect(status.status).toBe('paired')
+    expect(status.expiresAt).toBe('2099-08-28T20:00:00.000Z')
     const action = await transport.sendAction(dispatch)
     expect(action.simulated).toBe(false)
 

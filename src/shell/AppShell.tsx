@@ -42,10 +42,17 @@ export function AppShell({ children }: PropsWithChildren) {
   return (
     <div className={`app-shell background-${copy.background}`}>
       <div className="app-scrim" aria-hidden="true" />
+      <a
+        className="skip-link"
+        href="#main-content"
+        onClick={() => document.getElementById('main-content')?.focus()}
+      >
+        Skip to workspace
+      </a>
       <NavigationRail />
       <div className="workspace-frame">
         <TransparentHeader eyebrow={copy.eyebrow} title={copy.title} />
-        <main className="workspace-content" id="main-content" ref={contentRef}>
+        <main className="workspace-content" id="main-content" ref={contentRef} tabIndex={-1}>
           {children}
         </main>
       </div>

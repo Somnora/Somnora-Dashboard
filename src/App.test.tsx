@@ -15,6 +15,7 @@ describe('App', () => {
       screen.getByRole('heading', { name: 'Good evening, Jules' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Seeded demo')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Skip to workspace' })).toHaveAttribute('href', '#main-content')
     expect(screen.getByRole('heading', { name: 'Three Beautiful Things' })).toBeInTheDocument()
   })
 

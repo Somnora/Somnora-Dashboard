@@ -296,6 +296,7 @@ export interface PairingStatus {
   id: string
   status: 'waiting' | 'paired' | 'expired' | 'revoked'
   simulated: boolean
+  expiresAt: string
 }
 
 export type ConversationSource = 'iphone' | 'watch' | 'workbench'

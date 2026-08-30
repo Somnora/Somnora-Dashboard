@@ -4,6 +4,7 @@ import { AppShell } from './shell/AppShell'
 import { WorkbenchProvider } from './state/WorkbenchProvider'
 import { useWorkbench } from './state/workbenchContext'
 import { ExternalContextProvider } from './connectors/externalContext'
+import { DestinationErrorBoundary } from './features/common/DestinationErrorBoundary'
 
 const ConversationsView = lazy(() =>
   import('./features/conversations/ConversationsView').then((module) => ({
@@ -94,14 +95,24 @@ function ActiveDestination() {
   }
 }
 
+function DestinationWorkspace() {
+  const { state } = useWorkbench()
+
+  return (
+    <DestinationErrorBoundary resetKey={state.destination}>
+      <Suspense fallback={<DestinationLoading />}>
+        <ActiveDestination />
+      </Suspense>
+    </DestinationErrorBoundary>
+  )
+}
+
 export function App() {
   return (
     <ExternalContextProvider>
       <WorkbenchProvider>
         <AppShell>
-          <Suspense fallback={<DestinationLoading />}>
-            <ActiveDestination />
-          </Suspense>
+          <DestinationWorkspace />
         </AppShell>
       </WorkbenchProvider>
     </ExternalContextProvider>

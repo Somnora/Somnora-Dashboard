@@ -162,6 +162,11 @@ h3 {
   height: 8px;
   flex: 0 0 auto;
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.08);
+}
+
+.status-dot.is-connected {
   background: var(--success);
   box-shadow: 0 0 0 5px rgba(173, 211, 187, 0.12);
 }
@@ -194,6 +199,27 @@ h3 {
   scrollbar-width: thin;
 }
 
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 104px;
+  z-index: 20;
+  padding: 10px 14px;
+  border: 1px solid var(--rim);
+  border-radius: 12px;
+  color: var(--ink-light);
+  background: #101822;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-180%);
+  transition: transform var(--spring);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 .destination-loading {
   display: grid;
   min-height: 180px;
@@ -206,6 +232,24 @@ h3 {
 .destination-loading p:last-child {
   margin-bottom: 0;
   color: var(--ink-secondary);
+}
+
+.destination-error {
+  display: grid;
+  max-width: 660px;
+  gap: 10px;
+  margin: 4px;
+  padding: 28px;
+}
+
+.destination-error h2,
+.destination-error p {
+  margin-bottom: 0;
+}
+
+.destination-error .primary-button {
+  width: fit-content;
+  margin-top: 8px;
 }
 
 .navigation-rail {
@@ -4566,7 +4610,15 @@ h3 {
 
 @media (max-height: 850px) and (min-width: 821px) {
   .navigation-rail {
+    height: 100dvh;
+    min-height: 0;
     padding-block: 14px;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .navigation-rail::-webkit-scrollbar {
+    display: none;
   }
 
   .brand-button {
@@ -4690,6 +4742,10 @@ h3 {
     display: none;
   }
 
+  .header-status .demo-badge {
+    display: inline-flex;
+  }
+
   .workspace-content {
     overflow: visible;
   }
@@ -4749,6 +4805,14 @@ h3 {
   .live-thread-list,
   .live-conversation-workspace {
     min-height: 520px;
+  }
+
+  .live-conversations-layout.is-unpaired .live-thread-list {
+    min-height: 0;
+  }
+
+  .live-conversations-layout.is-unpaired .live-conversation-workspace {
+    min-height: 360px;
   }
 
   .live-composer {

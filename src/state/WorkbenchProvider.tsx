@@ -242,7 +242,7 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
   const sendLiveMessage = useCallback(async (message: string, mode: ConversationMode) => {
     if (transportMode !== 'relay' || pairing?.status !== 'paired') {
       setLiveError('Pair this Workbench with the iPhone before talking with Nora.')
-      return
+      return false
     }
     const threadId = activeLiveThread?.threadId ?? crypto.randomUUID()
     setLiveSending(true)
@@ -261,8 +261,10 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
       setActiveLiveThread(thread)
       setLiveThreads(threads)
       setLiveError(null)
+      return true
     } catch (error) {
       setLiveError(error instanceof Error ? error.message : 'Nora could not answer from the Workbench.')
+      return false
     } finally {
       setLiveSending(false)
     }
@@ -340,7 +342,12 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
       try {
         const status = await transportRef.current.getPairingStatus(pairing.id)
         if (status.status === 'paired') {
-          const activePairing = { ...pairing, status: 'paired' as const, code: undefined }
+          const activePairing = {
+            ...pairing,
+            status: 'paired' as const,
+            code: undefined,
+            expiresAt: status.expiresAt,
+          }
           setPairing(activePairing)
           saveStoredPairing(activePairing)
           setConnectionError(null)
@@ -353,12 +360,16 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
           setConnectionError(`The pairing was ${status.status}. Generate a new code.`)
         } else if (pairing.status === 'waiting') {
           setPairing({ ...pairing })
+          setConnectionError(null)
         }
       } catch (error) {
-        setConnectionError(error instanceof Error ? error.message : 'Pairing status could not be checked.')
+        const message = error instanceof Error ? error.message : 'Pairing status could not be checked.'
+        setConnectionError(pairing.status === 'waiting'
+          ? 'Pairing check paused. This code remains available while the Workbench retries automatically.'
+          : message)
         setPairing({ ...pairing })
       }
-    }, pairing.status === 'waiting' ? 2_500 : 30_000)
+    }, pairing.status === 'waiting' ? 10_000 : 30_000)
     return () => window.clearTimeout(timer)
   }, [pairing])
 
@@ -414,6 +425,14 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
   ])
 
   const pair = useCallback(async () => {
+    if (
+      pairing?.status === 'waiting' &&
+      pairing.code &&
+      Date.parse(pairing.expiresAt) > Date.now()
+    ) {
+      setConnectionError(null)
+      return
+    }
     setConnectionError(null)
     try {
       saveStoredPairing(null)
@@ -421,7 +440,7 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
     } catch (error) {
       setConnectionError(error instanceof Error ? error.message : 'Pairing could not be started.')
     }
-  }, [])
+  }, [pairing])
 
   const dispatchInvitation = useCallback(async () => {
     if (!evaluateHeroConsent(state.consentPolicies).canPrepare) {
