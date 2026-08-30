@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ConversationMode } from '../../domain/types'
 import { useWorkbench } from '../../state/workbenchContext'
 import { GlassPanel } from '../common/GlassPanel'
@@ -22,7 +22,11 @@ const modeCopy: Record<ConversationMode, { note: string; question: string }> = {
 export function ConversationsView() {
   const { state, profile, dispatch, connection, live } = useWorkbench()
   const [draft, setDraft] = useState('')
+  const [handoffTitle, setHandoffTitle] = useState<string | null>(null)
+  const [handoffSourceLabel, setHandoffSourceLabel] = useState('Receiving linked conversation')
   const threadRef = useRef<HTMLDivElement>(null)
+  const observedThreads = useRef<Map<string, string> | null>(null)
+  const pendingHandoffThread = useRef<string | null>(null)
   const positions = useRef<Record<ConversationMode, number>>({
     dream: 0,
     daily: 0,
@@ -31,6 +35,50 @@ export function ConversationsView() {
   const thread = profile.conversations.find(
     (item) => item.mode === state.conversationMode,
   )
+
+  useEffect(() => {
+    if (connection.mode !== 'relay' || connection.pairing?.status !== 'paired') return
+    if (live.loading || live.sending) return
+
+    const current = new Map(live.threads.map((item) => [item.threadId, item.updatedAt]))
+    const previous = observedThreads.current
+    observedThreads.current = current
+
+    if (!previous) return
+
+    const incoming = live.threads
+      .filter((item) => previous.get(item.threadId) !== item.updatedAt)
+      .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))[0]
+
+    if (!incoming || live.activeThread?.threadId === incoming.threadId) return
+
+    dispatch({ type: 'set-conversation-mode', value: incoming.mode })
+    setHandoffTitle(incoming.title)
+    setHandoffSourceLabel('Receiving linked conversation')
+    pendingHandoffThread.current = incoming.threadId
+    void live.openThread(incoming.threadId)
+  }, [
+    connection.mode,
+    connection.pairing?.status,
+    dispatch,
+    live,
+  ])
+
+  useEffect(() => {
+    const active = live.activeThread
+    if (!active || pendingHandoffThread.current !== active.threadId) return
+    const latestMessage = active.messages?.at(-1)
+    if (!latestMessage) return
+
+    setHandoffSourceLabel(
+      latestMessage.sourceDevice === 'watch'
+        ? 'Received from Apple Watch'
+        : latestMessage.sourceDevice === 'iphone'
+          ? 'Received from iPhone'
+          : 'Conversation updated',
+    )
+    pendingHandoffThread.current = null
+  }, [live.activeThread])
 
   if (connection.mode === 'relay') {
     const paired = connection.pairing?.status === 'paired'
@@ -48,7 +96,7 @@ export function ConversationsView() {
 
     const submit = async () => {
       const message = draft.trim()
-      if (!message || live.sending) return
+      if (!message || live.sending || live.loading) return
       const sent = await live.sendMessage(message, state.conversationMode)
       if (sent) setDraft('')
     }
@@ -69,6 +117,13 @@ export function ConversationsView() {
             >
               Start thread
             </button>
+          </div>
+          <div className="live-handoff-status" role="status">
+            <span aria-hidden="true" />
+            <div>
+              <strong>{handoffTitle ? handoffSourceLabel : 'Live handoff ready'}</strong>
+              <p>{handoffTitle ?? 'Speak or type in Somnora. The next conversation opens here automatically.'}</p>
+            </div>
           </div>
           <div className="conversation-tabs" role="tablist" aria-label="Somnora conversation mode">
             {(['dream', 'daily', 'eureka'] as ConversationMode[]).map((mode) => (
@@ -147,7 +202,7 @@ export function ConversationsView() {
               }}>
                 <label className="sr-only" htmlFor="live-nora-message">Message Nora</label>
                 <textarea
-                  disabled={live.sending}
+                  disabled={live.sending || live.loading}
                   id="live-nora-message"
                   maxLength={8_000}
                   onChange={(event) => setDraft(event.target.value)}
@@ -155,7 +210,7 @@ export function ConversationsView() {
                   rows={2}
                   value={draft}
                 />
-                <button className="primary-button" disabled={!draft.trim() || live.sending} type="submit">
+                <button className="primary-button" disabled={!draft.trim() || live.sending || live.loading} type="submit">
                   {live.sending ? 'Nora is thinking...' : 'Send'}
                 </button>
               </form>

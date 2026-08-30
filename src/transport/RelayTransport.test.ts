@@ -251,4 +251,42 @@ describe('RelayTransport', () => {
     ])
     expect(body.pairingId).toBe(pairingId)
   })
+
+  it('loads validated cursor pages for the live context timeline', async () => {
+    const threadId = '33333333-3333-4333-8333-333333333333'
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(response({
+      ok: true,
+      cursor: '2099-08-28T18:31:00.000Z',
+      hasMore: false,
+      truncated: false,
+      events: [{
+        id: 'conversation-44444444-4444-4444-8444-444444444444',
+        occurredAt: createdAt,
+        domain: 'eureka',
+        kind: 'capture',
+        actor: 'user',
+        confidence: 'confirmed',
+        title: 'Eureka capture',
+        summary: 'I talked this out on my run.',
+        sourceLabel: 'Eureka conversation from watch',
+        evidenceIds: [],
+        tags: ['watch', 'voice'],
+        privacy: 'private-profile',
+        relatedDestination: 'conversations',
+        relatedConversationMode: 'eureka',
+        relatedThreadId: threadId,
+      }],
+    }))
+    const transport = new RelayTransport(
+      'https://relay.example.test',
+      async () => 'browser-token',
+      fetcher,
+      pairingId,
+    )
+
+    const page = await transport.getContextTimeline('2099-08-28T18:30:00.000Z')
+
+    expect(page.events[0].relatedThreadId).toBe(threadId)
+    expect(fetcher.mock.calls[0][0]).toContain('since=2099-08-28T18%3A30%3A00.000Z')
+  })
 })

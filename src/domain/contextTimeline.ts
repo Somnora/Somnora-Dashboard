@@ -6,6 +6,35 @@ import type {
 } from './types'
 import { buildGrowthStories } from './growthStory'
 
+export function contextTimelineDayKey(occurredAt: string, timeZone?: string): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone,
+  }).formatToParts(new Date(occurredAt))
+  const year = parts.find((part) => part.type === 'year')?.value ?? ''
+  const month = parts.find((part) => part.type === 'month')?.value ?? ''
+  const day = parts.find((part) => part.type === 'day')?.value ?? ''
+  return `${year}-${month}-${day}`
+}
+
+export function mergeContextTimelineEvents(
+  current: ContextTimelineEvent[],
+  incoming: ContextTimelineEvent[],
+  limit = 500,
+): ContextTimelineEvent[] {
+  const byId = new Map(current.map((event) => [event.id, event]))
+  incoming.forEach((event) => byId.set(event.id, event))
+  return [...byId.values()]
+    .sort((left, right) => {
+      const chronological = new Date(right.occurredAt).getTime()
+        - new Date(left.occurredAt).getTime()
+      return chronological || left.id.localeCompare(right.id)
+    })
+    .slice(0, limit)
+}
+
 function evidenceDate(profile: DemoProfile, node: MemoryNode): string {
   const dates = node.evidenceIds
     .map((id) => profile.evidence.find((item) => item.id === id)?.occurredAt)

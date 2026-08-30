@@ -4,7 +4,9 @@ export function DemoBadge() {
   const { connection, state } = useWorkbench()
   if (connection.mode === 'relay') {
     const paired = connection.pairing?.status === 'paired'
-    const destinationUsesLiveAccount = state.destination === 'conversations' || state.destination === 'about-me'
+    const destinationUsesLiveAccount = state.destination === 'conversations'
+      || state.destination === 'timeline'
+      || state.destination === 'about-me'
     if (paired && destinationUsesLiveAccount) {
       return (
         <span
@@ -19,7 +21,7 @@ export function DemoBadge() {
       <span
         className="demo-badge"
         title={paired
-          ? 'This screen still uses preview data. Conversations and About Me use the paired account.'
+          ? 'This screen still uses preview data. Conversations, Timeline, and About Me use the paired account.'
           : 'This screen uses preview data until an iPhone is linked.'}
       >
         Preview data

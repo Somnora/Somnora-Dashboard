@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { buildContextTimeline } from '../../domain/contextTimeline'
+import { buildContextTimeline, contextTimelineDayKey } from '../../domain/contextTimeline'
 import type { ContextDomain, ContextTimelineEvent } from '../../domain/types'
 import { useWorkbench } from '../../state/workbenchContext'
 import { GlassPanel } from '../common/GlassPanel'
@@ -27,31 +27,27 @@ const domainLabels: Record<ContextDomain, string> = {
   nora: 'Nora',
 }
 
-function dayKey(occurredAt: string): string {
-  return occurredAt.slice(0, 10)
-}
-
-function formatDay(occurredAt: string): string {
+function formatDay(occurredAt: string, timeZone?: string): string {
   return new Intl.DateTimeFormat('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
-    timeZone: 'UTC',
+    timeZone,
   }).format(new Date(occurredAt))
 }
 
-function formatTime(occurredAt: string): string {
+function formatTime(occurredAt: string, timeZone?: string): string {
   return new Intl.DateTimeFormat('en-US', {
     hour: 'numeric',
     minute: '2-digit',
-    timeZone: 'UTC',
+    timeZone,
   }).format(new Date(occurredAt))
 }
 
-function groupEvents(events: ContextTimelineEvent[]) {
+function groupEvents(events: ContextTimelineEvent[], timeZone?: string) {
   return events.reduce<Array<{ date: string; events: ContextTimelineEvent[] }>>(
     (groups, event) => {
-      const date = dayKey(event.occurredAt)
+      const date = contextTimelineDayKey(event.occurredAt, timeZone)
       const current = groups.at(-1)
       if (current?.date === date) current.events.push(event)
       else groups.push({ date, events: [event] })
@@ -68,10 +64,12 @@ function confidenceCopy(event: ContextTimelineEvent): string {
 }
 
 export function ContextTimelineView() {
-  const { profile, state, dispatch } = useWorkbench()
+  const { profile, state, dispatch, connection, live } = useWorkbench()
+  const relayMode = connection.mode === 'relay'
+  const paired = connection.pairing?.status === 'paired'
   const events = useMemo(
-    () => buildContextTimeline(profile, state),
-    [profile, state],
+    () => relayMode ? live.timelineEvents : buildContextTimeline(profile, state),
+    [live.timelineEvents, profile, relayMode, state],
   )
   const [filter, setFilter] = useState<TimelineFilter>('all')
   const filteredEvents = useMemo(
@@ -85,10 +83,12 @@ export function ContextTimelineView() {
     ? selectedId
     : filteredEvents[0]?.id ?? ''
   const selected = events.find((event) => event.id === visibleSelectedId)
-  const grouped = groupEvents(filteredEvents)
-  const selectedEvidence = selected?.evidenceIds
+  const displayTimeZone = relayMode ? undefined : 'UTC'
+  const grouped = groupEvents(filteredEvents, displayTimeZone)
+  const selectedEvidence = relayMode ? [] : selected?.evidenceIds
     .map((id) => profile.evidence.find((evidence) => evidence.id === id))
     .filter((evidence) => evidence !== undefined) ?? []
+  const sourceCount = new Set(events.map((event) => event.domain)).size
 
   const openSource = () => {
     if (!selected?.relatedDestination) return
@@ -98,7 +98,45 @@ export function ContextTimelineView() {
         value: selected.relatedConversationMode,
       })
     }
+    if (selected.relatedThreadId) {
+      void live.openThread(selected.relatedThreadId)
+    }
     dispatch({ type: 'navigate', destination: selected.relatedDestination })
+  }
+
+  if (relayMode && !paired) {
+    return (
+      <div className="timeline-layout">
+        <section className="timeline-browser" aria-label="Universal context timeline">
+          <GlassPanel className="timeline-introduction">
+            <div>
+              <p className="eyebrow">Private account chronology</p>
+              <h2>Connect your iPhone to bring your story together.</h2>
+              <p>
+                The Timeline stays empty until you explicitly pair this Workbench.
+                It never substitutes preview entries for your account history.
+              </p>
+              <button
+                className="primary-button"
+                onClick={() => dispatch({ type: 'navigate', destination: 'conversations' })}
+                type="button"
+              >
+                Open phone connection
+              </button>
+            </div>
+          </GlassPanel>
+        </section>
+        <aside className="timeline-inspector" aria-label="Timeline privacy boundary">
+          <GlassPanel>
+            <p className="eyebrow">Boundary</p>
+            <h2>No hidden preview data</h2>
+            <p className="timeline-inspector-summary">
+              Only account-owned events returned through the scoped relay appear here.
+            </p>
+          </GlassPanel>
+        </aside>
+      </div>
+    )
   }
 
   return (
@@ -106,16 +144,17 @@ export function ContextTimelineView() {
       <section className="timeline-browser" aria-label="Universal context timeline">
         <GlassPanel className="timeline-introduction">
           <div>
-            <p className="eyebrow">One story, every surface</p>
+            <p className="eyebrow">{relayMode ? 'Live account chronology' : 'One story, every surface'}</p>
             <h2>Your days make more sense together.</h2>
             <p>
-              Dream, Daily, Eureka, body context, activities, and Nora's reasoning
-              share one inspectable chronology. Nothing here is a score.
+              {relayMode
+                ? 'Dream, Daily, and Eureka moments now arrive from your paired account as one inspectable chronology.'
+                : "Dream, Daily, Eureka, body context, activities, and Nora's reasoning share one inspectable chronology. Nothing here is a score."}
             </p>
           </div>
           <dl aria-label="Timeline coverage">
             <div><dt>Window</dt><dd>30 days</dd></div>
-            <div><dt>Sources</dt><dd>6 active</dd></div>
+            <div><dt>Sources</dt><dd>{relayMode ? `${sourceCount} live` : '6 active'}</dd></div>
             <div><dt>Boundary</dt><dd>Private</dd></div>
           </dl>
         </GlassPanel>
@@ -135,10 +174,20 @@ export function ContextTimelineView() {
         </div>
 
         <div className="timeline-scroll" aria-live="polite">
+          {relayMode && live.loading && events.length === 0 ? (
+            <p className="live-status-copy" role="status">Loading your account timeline...</p>
+          ) : null}
+          {relayMode && !live.loading && events.length === 0 ? (
+            <GlassPanel>
+              <p className="eyebrow">No events yet</p>
+              <h3>Your next synced conversation will appear here.</h3>
+              <p>The Workbench checks for account changes without replacing this space with demo history.</p>
+            </GlassPanel>
+          ) : null}
           {grouped.map((group) => (
             <section className="timeline-day" key={group.date}>
               <header>
-                <time dateTime={group.date}>{formatDay(group.events[0].occurredAt)}</time>
+                <time dateTime={group.date}>{formatDay(group.events[0].occurredAt, displayTimeZone)}</time>
                 <span>{group.events.length} {group.events.length === 1 ? 'moment' : 'moments'}</span>
               </header>
               <div className="timeline-day-events">
@@ -154,7 +203,7 @@ export function ContextTimelineView() {
                     <span className="timeline-event-copy">
                       <span className="timeline-event-meta">
                         <strong>{domainLabels[event.domain]}</strong>
-                        <time dateTime={event.occurredAt}>{formatTime(event.occurredAt)}</time>
+                        <time dateTime={event.occurredAt}>{formatTime(event.occurredAt, displayTimeZone)}</time>
                         <span>{event.kind}</span>
                       </span>
                       <b>{event.title}</b>
@@ -207,16 +256,30 @@ export function ContextTimelineView() {
         ) : null}
 
         <GlassPanel className="timeline-adapters">
-          <p className="eyebrow">Ecosystem path</p>
-          <h3>One Nora, specialized inputs.</h3>
-          <p>
-            Fitness and Nutrition can join this same chronology later through
-            permissioned adapters. They are roadmap integrations, not active demo data.
-          </p>
-          <div aria-label="Future context adapters">
-            <span>Fitness <small>roadmap</small></span>
-            <span>Nutrition <small>roadmap</small></span>
-          </div>
+          {relayMode ? (
+            <>
+              <p className="eyebrow">Continuity</p>
+              <h3>One source, every screen.</h3>
+              <p>
+                New iPhone, Watch, and Workbench conversation moments merge by stable ID.
+                Reloading updates the chronology without duplicating them.
+              </p>
+              {live.timelineTruncated ? <small>Showing the newest 250 account events.</small> : null}
+            </>
+          ) : (
+            <>
+              <p className="eyebrow">Ecosystem path</p>
+              <h3>One Nora, specialized inputs.</h3>
+              <p>
+                Fitness and Nutrition can join this same chronology later through
+                permissioned adapters. They are roadmap integrations, not active demo data.
+              </p>
+              <div aria-label="Future context adapters">
+                <span>Fitness <small>roadmap</small></span>
+                <span>Nutrition <small>roadmap</small></span>
+              </div>
+            </>
+          )}
         </GlassPanel>
       </aside>
     </div>

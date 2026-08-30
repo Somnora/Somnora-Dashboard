@@ -27,6 +27,8 @@ const live = {
   threads: [],
   activeThread: null,
   contextGraph: null,
+  timelineEvents: [],
+  timelineTruncated: false,
   loading: false,
   sending: false,
   errorMessage: null,

@@ -3727,6 +3727,41 @@ h3 {
   font-size: 26px;
 }
 
+.live-handoff-status {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 11px 12px;
+  border: 1px solid rgba(239, 179, 159, 0.24);
+  border-radius: 13px;
+  background: rgba(239, 179, 159, 0.08);
+}
+
+.live-handoff-status > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--coral-soft);
+  box-shadow: 0 0 14px rgba(239, 179, 159, 0.7);
+}
+
+.live-handoff-status strong {
+  display: block;
+  color: var(--ink-light);
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.live-handoff-status p {
+  margin: 2px 0 0;
+  color: var(--ink-secondary);
+  font-size: 9px;
+  line-height: 1.35;
+}
+
 .live-thread-list .conversation-tabs {
   width: auto;
   flex: 0 0 auto;

@@ -6,8 +6,10 @@ import {
   prepareNoraAction,
 } from '../domain/actionRuntime'
 import { evaluateHeroConsent } from '../domain/consentPolicy'
+import { mergeContextTimelineEvents } from '../domain/contextTimeline'
 import type {
   ConversationMode,
+  ContextTimelineEvent,
   LiveContextGraph,
   LiveConversationThread,
   MemoryCorrection,
@@ -73,6 +75,25 @@ function createConfiguredTransport(): WorkbenchTransport {
     )
   }
   return new DemoTransport()
+}
+
+async function loadLiveTimelinePages(
+  transport: RelayTransport,
+  initialCursor: string | null,
+) {
+  let cursor = initialCursor ?? undefined
+  let events: ContextTimelineEvent[] = []
+  let truncated = false
+  let hasMore = false
+  for (let pageIndex = 0; pageIndex < 5; pageIndex += 1) {
+    const page = await transport.getContextTimeline(cursor)
+    events = mergeContextTimelineEvents(events, page.events)
+    truncated = truncated || page.truncated
+    hasMore = page.hasMore
+    cursor = page.cursor
+    if (!page.hasMore) break
+  }
+  return { cursor: cursor ?? new Date().toISOString(), events, hasMore, truncated }
 }
 
 function newIdempotencyKey(): string {
@@ -163,6 +184,8 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
   const [liveThreads, setLiveThreads] = useState<LiveConversationThread[]>([])
   const [activeLiveThread, setActiveLiveThread] = useState<LiveConversationThread | null>(null)
   const [liveContextGraph, setLiveContextGraph] = useState<LiveContextGraph | null>(null)
+  const [liveTimelineEvents, setLiveTimelineEvents] = useState<ContextTimelineEvent[]>([])
+  const [liveTimelineTruncated, setLiveTimelineTruncated] = useState(false)
   const [liveLoading, setLiveLoading] = useState(false)
   const [liveSending, setLiveSending] = useState(false)
   const [liveError, setLiveError] = useState<string | null>(null)
@@ -170,6 +193,7 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
   const idempotencyKeyRef = useRef(newIdempotencyKey())
   const consentReceiptIdRef = useRef(newIdempotencyKey())
   const activeLiveThreadRef = useRef<LiveConversationThread | null>(null)
+  const liveTimelineCursorRef = useRef<string | null>(null)
 
   useEffect(() => {
     activeLiveThreadRef.current = activeLiveThread
@@ -188,12 +212,16 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
     setLiveLoading(true)
     try {
       const transport = relayTransport()
-      const [threads, graph] = await Promise.all([
+      const [threads, graph, timeline] = await Promise.all([
         transport.listThreads(),
         transport.getContextGraph(),
+        loadLiveTimelinePages(transport, liveTimelineCursorRef.current),
       ])
       setLiveThreads(threads)
       setLiveContextGraph(graph)
+      setLiveTimelineEvents((current) => mergeContextTimelineEvents(current, timeline.events))
+      setLiveTimelineTruncated((current) => current || timeline.truncated)
+      liveTimelineCursorRef.current = timeline.cursor
       const current = activeLiveThreadRef.current
       const currentId = current?.threadId
       if (currentId && threads.some((thread) => thread.threadId === currentId)) {
@@ -254,12 +282,16 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
         mode,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
       })
-      const [thread, threads] = await Promise.all([
+      const [thread, threads, timeline] = await Promise.all([
         transport.getThread(threadId),
         transport.listThreads(),
+        loadLiveTimelinePages(transport, liveTimelineCursorRef.current),
       ])
       setActiveLiveThread(thread)
       setLiveThreads(threads)
+      setLiveTimelineEvents((current) => mergeContextTimelineEvents(current, timeline.events))
+      setLiveTimelineTruncated((current) => current || timeline.truncated)
+      liveTimelineCursorRef.current = timeline.cursor
       setLiveError(null)
       return true
     } catch (error) {
@@ -339,6 +371,12 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (transportMode !== 'relay' || !pairing) return
     const timer = window.setTimeout(async () => {
+      if (pairing.status === 'waiting' && Date.parse(pairing.expiresAt) <= Date.now()) {
+        setPairing(null)
+        saveStoredPairing(null)
+        setConnectionError('The pairing code expired. Generate a new code.')
+        return
+      }
       try {
         const status = await transportRef.current.getPairingStatus(pairing.id)
         if (status.status === 'paired') {
@@ -357,6 +395,9 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
           setLiveThreads([])
           setActiveLiveThread(null)
           setLiveContextGraph(null)
+          setLiveTimelineEvents([])
+          setLiveTimelineTruncated(false)
+          liveTimelineCursorRef.current = null
           setConnectionError(`The pairing was ${status.status}. Generate a new code.`)
         } else if (pairing.status === 'waiting') {
           setPairing({ ...pairing })
@@ -369,7 +410,9 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
           : message)
         setPairing({ ...pairing })
       }
-    }, pairing.status === 'waiting' ? 10_000 : 30_000)
+    }, pairing.status === 'waiting' && Date.parse(pairing.expiresAt) <= Date.now()
+      ? 0
+      : pairing.status === 'waiting' ? 10_000 : 30_000)
     return () => window.clearTimeout(timer)
   }, [pairing])
 
@@ -436,6 +479,9 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
     setConnectionError(null)
     try {
       saveStoredPairing(null)
+      setLiveTimelineEvents([])
+      setLiveTimelineTruncated(false)
+      liveTimelineCursorRef.current = null
       setPairing(await transportRef.current.pair())
     } catch (error) {
       setConnectionError(error instanceof Error ? error.message : 'Pairing could not be started.')
@@ -583,6 +629,8 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
         threads: liveThreads,
         activeThread: activeLiveThread,
         contextGraph: liveContextGraph,
+        timelineEvents: liveTimelineEvents,
+        timelineTruncated: liveTimelineTruncated,
         loading: liveLoading,
         sending: liveSending,
         errorMessage: liveError,
@@ -613,6 +661,8 @@ export function WorkbenchProvider({ children }: PropsWithChildren) {
       liveError,
       liveLoading,
       liveSending,
+      liveTimelineEvents,
+      liveTimelineTruncated,
       liveThreads,
       openLiveThread,
       pair,

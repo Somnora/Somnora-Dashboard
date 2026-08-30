@@ -1,7 +1,9 @@
 import { validateActionSnapshot } from '../domain/actionRuntime'
 import type {
   ConversationMode,
+  ContextTimelineEvent,
   LiveContextGraph,
+  LiveContextTimelinePage,
   LiveConversationMessage,
   LiveConversationThread,
   MemoryCorrection,
@@ -70,6 +72,42 @@ interface ChatEnvelope {
 interface ContextGraphEnvelope {
   ok: boolean
   graph?: LiveContextGraph
+}
+
+interface ContextTimelineEnvelope {
+  ok: boolean
+  cursor?: string
+  hasMore?: boolean
+  truncated?: boolean
+  events?: ContextTimelineEvent[]
+}
+
+const timelineDomains = new Set(['dream', 'daily', 'eureka', 'sleep', 'fitness', 'nutrition', 'activity', 'nora'])
+const timelineKinds = new Set(['capture', 'response', 'signal', 'interpretation', 'invitation', 'outcome', 'growth', 'correction'])
+const timelineActors = new Set(['user', 'nora', 'device', 'system'])
+const timelineConfidences = new Set(['confirmed', 'observed', 'tentative'])
+const timelinePrivacy = new Set(['private-profile', 'device-context', 'session-only'])
+
+function isContextTimelineEvent(value: unknown): value is ContextTimelineEvent {
+  if (!value || typeof value !== 'object') return false
+  const event = value as Record<string, unknown>
+  return typeof event.id === 'string'
+    && event.id.length > 0
+    && typeof event.occurredAt === 'string'
+    && Number.isFinite(Date.parse(event.occurredAt))
+    && timelineDomains.has(String(event.domain))
+    && timelineKinds.has(String(event.kind))
+    && timelineActors.has(String(event.actor))
+    && timelineConfidences.has(String(event.confidence))
+    && typeof event.title === 'string'
+    && typeof event.summary === 'string'
+    && typeof event.sourceLabel === 'string'
+    && Array.isArray(event.evidenceIds)
+    && Array.isArray(event.tags)
+    && timelinePrivacy.has(String(event.privacy))
+    && (event.relatedThreadId === undefined
+      || (typeof event.relatedThreadId === 'string'
+        && /^[0-9a-f-]{36}$/i.test(event.relatedThreadId)))
 }
 
 const statusMap: Record<string, NoraActionStatus> = {
@@ -321,6 +359,38 @@ export class RelayTransport implements WorkbenchTransport {
       throw new Error('The relay returned an invalid context graph.')
     }
     return envelope.graph
+  }
+
+  async getContextTimeline(since?: string): Promise<LiveContextTimelinePage> {
+    const pairingId = this.requirePairing()
+    if (since && !Number.isFinite(Date.parse(since))) {
+      throw new Error('Timeline cursor is invalid.')
+    }
+    const parameters = new URLSearchParams({ pairingId })
+    if (since) parameters.set('since', since)
+    const envelope = await this.request<ContextTimelineEnvelope>(
+      `/workbench/context-timeline?${parameters.toString()}`,
+      {},
+      maximumAccountResponseBytes,
+    )
+    if (
+      envelope.ok !== true
+      || typeof envelope.cursor !== 'string'
+      || !Number.isFinite(Date.parse(envelope.cursor))
+      || typeof envelope.hasMore !== 'boolean'
+      || typeof envelope.truncated !== 'boolean'
+      || !Array.isArray(envelope.events)
+      || envelope.events.length > 250
+      || !envelope.events.every(isContextTimelineEvent)
+    ) {
+      throw new Error('The relay returned an invalid context timeline.')
+    }
+    return {
+      events: envelope.events,
+      cursor: envelope.cursor,
+      hasMore: envelope.hasMore,
+      truncated: envelope.truncated,
+    }
   }
 
   async correctContextGraph(correction: MemoryCorrection): Promise<LiveContextGraph> {

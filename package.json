@@ -2,18 +2,64 @@
   "name": "somnora-desktop-workbench",
   "private": true,
   "version": "0.1.0",
+  "description": "Somnora Workbench - A Private Agentic Workspace for Reflection and Real-World Action",
+  "author": "Somnora",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "demo": "vite --host 127.0.0.1 --port 4173",
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
+    "desktop": "electron .",
+    "desktop:pack": "npm run build && electron-builder --dir",
+    "desktop:dist": "npm run build && electron-builder --mac dmg",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint .",
     "screenshots": "playwright test --grep @visual --workers=1",
     "test": "vitest",
     "test:run": "vitest run",
     "e2e": "playwright test --grep-invert @visual"
+  },
+  "build": {
+    "appId": "com.somnora.workbench",
+    "productName": "Somnora Workbench",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": ["dmg", "zip"],
+      "icon": "build/icon.icns",
+      "category": "public.app-category.productivity",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "title": "${productName} ${version}",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    }
   },
   "dependencies": {
     "@xyflow/react": "12.11.5",
@@ -32,6 +78,8 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
     "@vitejs/plugin-react": "6.1.1",
+    "electron": "^44.0.0",
+    "electron-builder": "^26.15.3",
     "eslint": "10.9.1",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.5",

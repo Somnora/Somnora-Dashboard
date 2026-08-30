@@ -65,6 +65,7 @@ export interface ContextTimelineEvent {
   privacy: 'private-profile' | 'device-context' | 'session-only'
   relatedDestination?: Destination
   relatedConversationMode?: ConversationMode
+  relatedThreadId?: string
 }
 
 export type MemoryCategory =
@@ -330,6 +331,13 @@ export interface LiveContextGraph {
   nodes: MemoryNode[]
   edges: MemoryEdge[]
   evidence: MemoryEvidence[]
+}
+
+export interface LiveContextTimelinePage {
+  events: ContextTimelineEvent[]
+  cursor: string
+  hasMore: boolean
+  truncated: boolean
 }
 
 export interface DeliveryState {

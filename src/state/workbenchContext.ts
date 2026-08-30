@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react'
 import type { Dispatch } from 'react'
 import type {
   ConversationMode,
+  ContextTimelineEvent,
   DemoProfile,
   LiveContextGraph,
   LiveConversationThread,
@@ -25,6 +26,8 @@ export interface WorkbenchContextValue {
     threads: LiveConversationThread[]
     activeThread: LiveConversationThread | null
     contextGraph: LiveContextGraph | null
+    timelineEvents: ContextTimelineEvent[]
+    timelineTruncated: boolean
     loading: boolean
     sending: boolean
     errorMessage: string | null

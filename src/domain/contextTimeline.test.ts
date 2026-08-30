@@ -1,9 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import { demoProfile } from '../demo/profile'
 import { initialWorkbenchState } from '../state/initialState'
-import { buildContextTimeline } from './contextTimeline'
+import {
+  buildContextTimeline,
+  contextTimelineDayKey,
+  mergeContextTimelineEvents,
+} from './contextTimeline'
 
 describe('buildContextTimeline', () => {
+  it('uses the displayed timezone when grouping live events', () => {
+    expect(contextTimelineDayKey(
+      '2026-08-31T06:30:00.000Z',
+      'America/Los_Angeles',
+    )).toBe('2026-08-30')
+  })
+
   it('combines profile sources in reverse chronological order', () => {
     const events = buildContextTimeline(demoProfile, initialWorkbenchState)
     const times = events.map((event) => new Date(event.occurredAt).getTime())
@@ -73,5 +84,21 @@ describe('buildContextTimeline', () => {
 
     expect(delivery?.summary).toContain('2 of 3 discoveries')
     expect(delivery?.sourceLabel).toBe('Simulated device relay')
+  })
+
+  it('merges cursor pages without duplicates and keeps deterministic chronology', () => {
+    const base = buildContextTimeline(demoProfile, initialWorkbenchState).slice(0, 2)
+    const corrected = { ...base[0], summary: 'Updated by the canonical source.' }
+    const later = {
+      ...base[1],
+      id: 'conversation-live-later',
+      occurredAt: '2026-08-30T12:00:00.000Z',
+    }
+
+    const merged = mergeContextTimelineEvents(base, [corrected, later])
+
+    expect(merged.filter((event) => event.id === corrected.id)).toHaveLength(1)
+    expect(merged.find((event) => event.id === corrected.id)?.summary).toBe(corrected.summary)
+    expect(merged[0].id).toBe(later.id)
   })
 })
