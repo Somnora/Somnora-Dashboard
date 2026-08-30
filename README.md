@@ -4,6 +4,13 @@ Somnora Desktop Workbench is a cross-device companion for Somnora on iPhone and 
 
 This repository contains the new hackathon Workbench. The existing Somnora iPhone and Watch apps predate the submission period. The Workbench and the new cross-device ecosystem coordination were started on 08-27-26.
 
+## Hackathon Submission & Technical Blog
+
+- **Technical Architecture Blog:** [Read the full write-up in BLOG.md](file:///Users/jamesmcshane/Desktop/Somnora-Workbench/BLOG.md) (or on [GitHub](https://github.com/Somnora/Somnora-Dashboard/blob/main/BLOG.md))
+- **Architecture Diagram:** [docs/Somnora-Architecture-Diagram.png](file:///Users/jamesmcshane/Desktop/Somnora-Workbench/docs/Somnora-Architecture-Diagram.png)
+- **Devpost Guide:** [devpost-submission.md](file:///Users/jamesmcshane/Desktop/Somnora-Workbench/devpost-submission.md)
+
+
 ## Run the live Workbench
 
 Requirements: Node.js 24 or another runtime supported by Vite 8.
