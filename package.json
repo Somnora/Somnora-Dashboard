@@ -25,7 +25,8 @@
     "appId": "com.somnora.workbench",
     "productName": "Somnora Workbench",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
     "files": [
       "dist/**/*",

@@ -28,7 +28,7 @@ export function NavigationRail() {
         onClick={() => dispatch({ type: 'navigate', destination: 'home' })}
         type="button"
       >
-        <img alt="" src="/assets/brand/somnora-logo.png" />
+        <img alt="Somnora Logo" src="./assets/brand/somnora-logo.png" />
       </button>
       <div className="nav-destinations">
         {destinations.map((destination) => (
